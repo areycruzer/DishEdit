@@ -1,5 +1,9 @@
 # Implementation Status
 
+## End-to-end evolution — started 19 July 2026
+
+Baseline verified: 27/27 tests pass on Xcode 27 beta 3. Beginning the Copper & Crumb restaurant flow with Burger/Sub/Taco Wrap, instruction review, allergy acknowledgement, and checkout. Pizza and Waffle scope is being replaced per the design spec.
+
 ## What is real
 
 | Capability | Status |
