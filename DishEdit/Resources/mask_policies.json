@@ -1,0 +1,20 @@
+{
+  "burger.remove.tomato": {
+    "minimumInsideFraction": 0.82,
+    "minimumCoverage": 0.65,
+    "minimumAreaRatio": 0.35,
+    "maximumAreaRatio": 1.60
+  },
+  "pizza.remove.olives": {
+    "minimumInsideFraction": 0.88,
+    "minimumCoverage": 0.80,
+    "minimumAreaRatio": 0.70,
+    "maximumAreaRatio": 1.35
+  },
+  "waffle.remove.strawberries": {
+    "minimumInsideFraction": 0.86,
+    "minimumCoverage": 0.78,
+    "minimumAreaRatio": 0.60,
+    "maximumAreaRatio": 1.40
+  }
+}

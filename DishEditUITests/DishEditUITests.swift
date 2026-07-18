@@ -1,41 +1,116 @@
-//
-//  DishEditUITests.swift
-//  DishEditUITests
-//
-//  Created by Swyam Sharma on 18/07/26.
-//
-
 import XCTest
 
 final class DishEditUITests: XCTestCase {
-
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
     }
 
     @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
+    func testCompleteBurgerLoopAndSummary() throws {
         let app = XCUIApplication()
         app.launch()
 
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
-        // XCUIAutomation Documentation
-        // https://developer.apple.com/documentation/xcuiautomation
+        let stage = app.descendants(matching: .any)["dish.stage"]
+        XCTAssertTrue(stage.waitForExistence(timeout: 8))
+
+        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.55)).tap()
+        XCTAssertTrue(app.buttons["No tomato"].waitForExistence(timeout: 2))
+
+        app.buttons["modifier.add"].tap()
+        XCTAssertTrue(app.buttons["Cheese"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Open order summary, total ₹289"].exists)
+
+        app.buttons["order.summary"].tap()
+        XCTAssertTrue(app.navigationBars["Order truth"].waitForExistence(timeout: 2))
+        app.buttons["Done"].tap()
+
+        let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        screenshot.name = "Burger — tomato removed, cheese added"
+        screenshot.lifetime = .keepAlways
+        add(screenshot)
+    }
+
+    @MainActor
+    func testDishSwitchingAndAccessibleAddition() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["dish.select.pizza"].tap()
+        XCTAssertTrue(app.staticTexts["Midnight Margherita"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Add jalapeños"].exists)
+        let pizzaScreenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        pizzaScreenshot.name = "Pizza stage"
+        pizzaScreenshot.lifetime = .keepAlways
+        add(pizzaScreenshot)
+
+        app.buttons["dish.select.waffle"].tap()
+        XCTAssertTrue(app.staticTexts["After Dark Waffle"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["Add vanilla ice cream"].exists)
+        let waffleScreenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        waffleScreenshot.name = "Waffle stage"
+        waffleScreenshot.lifetime = .keepAlways
+        add(waffleScreenshot)
+    }
+
+    @MainActor
+    func testUndoRedoAndResetKeepVisualAndOrderStateTogether() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let stage = app.descendants(matching: .any)["dish.stage"]
+        XCTAssertTrue(stage.waitForExistence(timeout: 8))
+        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.55)).tap()
+        XCTAssertTrue(app.buttons["No tomato"].waitForExistence(timeout: 2))
+
+        app.buttons["Undo"].tap()
+        XCTAssertFalse(app.buttons["No tomato"].exists)
+        XCTAssertTrue(app.buttons["Open order summary, total ₹249"].exists)
+
+        app.buttons["Redo"].tap()
+        XCTAssertTrue(app.buttons["No tomato"].waitForExistence(timeout: 2))
+
+        app.buttons["Reset dish"].tap()
+        XCTAssertFalse(app.buttons["No tomato"].exists)
+        XCTAssertTrue(app.buttons["Open order summary, total ₹249"].exists)
+    }
+
+    @MainActor
+    func testMagneticCheeseDragCommitsOnlyInsideApprovedFoodZone() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let stage = app.descendants(matching: .any)["dish.stage"]
+        let cheese = app.descendants(matching: .any)["modifier.drag.asset"]
+        XCTAssertTrue(stage.waitForExistence(timeout: 8))
+        XCTAssertTrue(cheese.waitForExistence(timeout: 2))
+
+        cheese.press(
+            forDuration: 0.80,
+            thenDragTo: stage,
+            withVelocity: .slow,
+            thenHoldForDuration: 0.20
+        )
+
+        XCTAssertTrue(app.buttons["Cheese"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["Open order summary, total ₹289"].exists)
+    }
+
+    @MainActor
+    func testReconstructionAppearsBeforePhotographCommits() throws {
+        let app = XCUIApplication()
+        app.launch()
+
+        let stage = app.descendants(matching: .any)["dish.stage"]
+        XCTAssertTrue(stage.waitForExistence(timeout: 8))
+        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.55)).tap()
+
+        XCTAssertTrue(app.staticTexts["ON-DEVICE PREVIEW"].waitForExistence(timeout: 2))
+        XCTAssertTrue(app.buttons["No tomato"].exists)
+        XCTAssertTrue(app.staticTexts["Visual preview ready"].waitForExistence(timeout: 7))
     }
 
     @MainActor
     func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
