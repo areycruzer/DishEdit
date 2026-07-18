@@ -775,27 +775,4 @@ private struct ReconstructionOverlay: View {
     }
 }
 
-private enum INR {
-    nonisolated static func format(_ paise: Int) -> String {
-        "₹\(paise / 100)"
-    }
-}
-
-@MainActor
-private enum BundledImage {
-    private static let cache = NSCache<NSString, UIImage>()
-
-    static func image(named name: String) -> Image {
-        if let cached = cache.object(forKey: name as NSString) {
-            return Image(uiImage: cached)
-        }
-        guard let path = Bundle.main.path(forResource: name, ofType: "png"),
-              let uiImage = UIImage(contentsOfFile: path) else {
-            return Image(systemName: "photo.badge.exclamationmark")
-        }
-        cache.setObject(uiImage, forKey: name as NSString)
-        return Image(uiImage: uiImage)
-    }
-}
-
 #Preview { ContentView() }
