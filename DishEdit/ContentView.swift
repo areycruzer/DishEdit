@@ -378,7 +378,7 @@ private struct DishStage: View {
                 }
                 if !coordinator.state.activeModifierIDs.contains(modifier.id), !reduceMotion {
                     beginRemovalGhost(
-                        assetName: coordinator.imageAssetName,
+                        assetName: coordinator.displayedImageAssetName,
                         maskAssetName: modifier.authorMaskAsset
                     )
                 }
@@ -494,13 +494,7 @@ private struct AddOnTray: View {
                         .frame(width: 66, height: 54)
                         .rotationEffect(.degrees(-4))
                         .shadow(color: .black.opacity(0.55), radius: 7, y: 8)
-                        .draggable(addition.id) {
-                            BundledImage.image(named: addition.trayAsset ?? "")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 118, height: 92)
-                                .shadow(color: .black.opacity(0.6), radius: 16, y: 10)
-                        }
+                        .draggable(addition.id)
                         .accessibilityElement()
                         .accessibilityLabel("Drag \(addition.shortLabel) onto the dish")
                         .accessibilityIdentifier("modifier.drag.asset")
@@ -590,7 +584,7 @@ private struct DiagnosticsView: View {
                     Button("Reset dish") { coordinator.reset() }
                 }
                 Section("Technical honesty") {
-                    Text("The stage path currently uses reviewed catalog masks and generated catalog patches. Live LCM is disabled until a physical iPhone 16 passes the memory and latency gate.")
+                    Text("The stage path currently uses reviewed catalog masks and matched destination photographs. The 5.4-second reconstruction treatment runs live, but its pixels are prepared catalog assets. Live LCM remains disabled until a physical iPhone 16 passes the memory and latency gate.")
                     Text("No network, private API, payment, identity, allergy, or nutrition claim is used.")
                 }
             }

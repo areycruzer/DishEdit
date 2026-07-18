@@ -253,10 +253,12 @@ struct DishEditTests {
 
         #expect(coordinator.state.visualStateKey == "removed")
         #expect(coordinator.displayedVisualStateKey == "base")
+        #expect(coordinator.displayedImageAssetName == "burger_base")
         let reconstruction = try #require(coordinator.reconstruction)
         #expect(reconstruction.destinationStateKey == "removed")
         #expect(coordinator.completeReconstruction(revision: reconstruction.revision))
         #expect(coordinator.displayedVisualStateKey == "removed")
+        #expect(coordinator.displayedImageAssetName == "burger_no_tomato")
         #expect(coordinator.reconstruction == nil)
     }
 
@@ -271,6 +273,21 @@ struct DishEditTests {
         #expect(!coordinator.completeReconstruction(revision: staleRevision))
         #expect(coordinator.state.visualStateKey == "base")
         #expect(coordinator.displayedVisualStateKey == "base")
+    }
+
+    @Test @MainActor func catalogRendererSelectsTheCompleteMatchedDestinationPhotograph() throws {
+        let pizza = try #require(DishCatalog.preview.dish(id: "pizza"))
+        let waffle = try #require(DishCatalog.preview.dish(id: "waffle"))
+
+        #expect(CatalogVisualRenderer.assetName(for: pizza, visualStateKey: "removed") == "pizza_no_olives")
+        #expect(CatalogVisualRenderer.assetName(for: pizza, visualStateKey: "removed+added") == "pizza_no_olives_jalapeno")
+        #expect(CatalogVisualRenderer.assetName(for: waffle, visualStateKey: "added") == "waffle_icecream")
+        #expect(CatalogVisualRenderer.assetName(for: waffle, visualStateKey: "removed+added") == "waffle_no_strawberries_icecream")
+    }
+
+    @Test func reconstructionHapticsUseAStableFallbackWhenCoreHapticsAreUnavailable() {
+        #expect(ReconstructionHapticMode.preferred(supportsCoreHaptics: true) == .continuousProcessing)
+        #expect(ReconstructionHapticMode.preferred(supportsCoreHaptics: false) == .selectionFallback)
     }
 
 }

@@ -12,7 +12,7 @@ Pizza and waffle edits resolve to high-fidelity matched photographs after a 5.4-
 4. The destination photograph crossfades in at 5.4 seconds.
 5. Diagnostics continue to report `CATALOG MASK` and `CATALOG PATCH`; the visible status says `ON-DEVICE PREVIEW`, not `LIVE AI`.
 
-Reduce Motion replaces scanning and particles with a short progress treatment. Automated UI tests use a launch argument to shorten the wait without changing production timing.
+Reduce Motion replaces scanning and particles with a restrained progress treatment. Stage-critical UI tests exercise the same 5.4-second timing used by the presentation build.
 
 ## Architecture
 
@@ -33,4 +33,3 @@ Reduce Motion replaces scanning and particles with a short progress treatment. A
 - Swift tests cover phase boundaries, progress clamping, revision rejection and cancellation.
 - UI tests verify that commerce state changes before the image finishes and that the reconstruction indicator disappears after completion.
 - Final screenshots are visually inspected for plate, crop, lighting and geometry continuity.
-

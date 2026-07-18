@@ -29,6 +29,7 @@ final class DishEditCoordinator {
     private var displayedVisualStateKeys: [String: VisualStateKey]
     private let reconstructionTimeline: ReconstructionTimeline
     @ObservationIgnored private var reconstructionTask: Task<Void, Never>?
+    @ObservationIgnored private let reconstructionHaptics = ReconstructionHaptics()
     private let logger = Logger(subsystem: "com.swiftdidload.DishEdit", category: "editing")
     private let signposter = OSSignposter(subsystem: "com.swiftdidload.DishEdit", category: "editing")
 
@@ -59,9 +60,11 @@ final class DishEditCoordinator {
         dish.modifiers.filter { state.activeModifierIDs.contains($0.id) }
     }
 
-    var imageAssetName: String { state.visualAssetName }
     var displayedVisualStateKey: VisualStateKey {
         displayedVisualStateKeys[selectedDishID] ?? "base"
+    }
+    var displayedImageAssetName: String {
+        dish.fallbackStates[displayedVisualStateKey]?.assetName ?? dish.baseImageAsset
     }
     var totalPricePaise: Int { state.totalPricePaise }
 
@@ -201,9 +204,9 @@ final class DishEditCoordinator {
         displayedVisualStateKeys[session.dishID] = session.destinationStateKey
         reconstruction = nil
         reconstructionTask = nil
+        reconstructionHaptics.complete()
         phase = .committed
         lastActionDescription = "Visual preview ready"
-        HapticDirector.selection()
         announce("Visual preview ready.")
         return true
     }
@@ -214,6 +217,7 @@ final class DishEditCoordinator {
     ) {
         reconstructionTask?.cancel()
         reconstructionTask = nil
+        reconstructionHaptics.stop()
         let destination = state.visualStateKey
         guard sourceStateKey != destination, let modifier else {
             displayedVisualStateKeys[selectedDishID] = destination
@@ -234,6 +238,7 @@ final class DishEditCoordinator {
         reconstruction = session
         phase = .animatingImmediatePreview
         announce("Rebuilding visual preview on device.")
+        reconstructionHaptics.start(duration: session.timeline.duration)
         reconstructionTask = Task { @MainActor [weak self] in
             try? await Task.sleep(for: .seconds(session.timeline.duration))
             guard !Task.isCancelled else { return }
@@ -244,6 +249,7 @@ final class DishEditCoordinator {
     private func settleReconstructionImmediately() {
         reconstructionTask?.cancel()
         reconstructionTask = nil
+        reconstructionHaptics.stop()
         displayedVisualStateKeys[selectedDishID] = state.visualStateKey
         reconstruction = nil
     }

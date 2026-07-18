@@ -12,16 +12,16 @@
 | Undo, redo, reset, price, modifier IDs | Live and deterministic |
 | Before/after scrub, pinch, pan, double-tap reset | Live |
 | Layered Core Motion depth | Foreground/body parallax implemented; hardware feel pending |
-| Haptics | Live on hardware; simulator cannot validate feel |
+| Haptics | Immediate impacts plus a Core Haptics reconstruction pulse; simulator cannot validate feel |
 | Liquid Glass controls | Live |
 | iOS 27 iterative-segmentation service | Compiled; not stage-enabled without physical-device validation |
-| Catalog mask/patch fallback | Live, pixel-local, and guaranteed |
+| Matched catalog-state fallback | Live, full-frame, offline, and guaranteed |
 | Local LCM refinement | Interface only; model not bundled or claimed |
 | Networking, payments, order submission | Intentionally absent |
 
 ## What is prepared
 
-The visual-state photographs and merchant masks were prepared in advance and are disclosed as reviewed catalog assets. Runtime Core Image compositing copies only masked pixels into a stable base photograph; it is not presented as live generative AI. The customer interaction, state transitions, price changes, animations, gestures, accessibility, and diagnostics are executed live.
+The visual-state photographs and merchant masks were prepared in advance and are disclosed as reviewed catalog assets. Runtime uses the mask to resolve the ingredient and localize a 5.4-second on-device reconstruction presentation, then reveals the complete matched destination photograph. This avoids partial-composite seams and is not presented in diagnostics as live generative AI. The interaction, timing, state transitions, price changes, animations, haptics, gestures, accessibility, and diagnostics execute live.
 
 ## What is mocked
 

@@ -6,9 +6,9 @@ Accessed 18 July 2026. Material technical claims are verified against primary so
 
 - iOS 27 `GenerateIterativeSegmentationRequest` is implemented behind `IngredientMasking` for a point-seeded visual mask; ingredient identity remains catalog-owned. It is not labeled stage-ready until a physical iPhone 16 passes the mask gate.
 - SwiftUI drag/drop and Liquid Glass for direct manipulation and restrained system-native chrome.
-- Core Image mask compositing with six bundled author masks for exact outside-region preservation.
+- Six bundled author masks for ingredient hit testing, animation localization, and optional live-model validation.
 - Core Motion and layered SwiftUI transforms for a reliable 2.5D food stage.
-- Catalog-authored matched visual states, pixel-accurate mask hit testing, and native SwiftUI drag/drop as the guaranteed offline engine.
+- Catalog-authored matched full-frame visual states, pixel-accurate mask hit testing, and native SwiftUI drag/drop as the guaranteed offline engine. Complete destination photographs replaced stage-critical partial compositing after visual inspection exposed seams in pizza and waffle states.
 - A protocol boundary for optional local Core ML refinement; it is disabled until physical iPhone 16 validation.
 
 ## Installed-SDK findings

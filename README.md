@@ -18,11 +18,11 @@ Open `DishEdit.xcodeproj`, choose the DishEdit scheme, and run on iOS 27. The pr
 ## Architecture
 
 - `Domain`: immutable catalog values, deterministic order state, history, and coordinate mapping.
-- `Editing`: bundled author masks, Core Image mask-local compositing, Vision abstraction, mask policy, revision gate, catalog fallback, and optional LCM boundary.
-- `Experience`: `@MainActor @Observable` coordination, motion, haptics, diagnostics, and SwiftUI stage.
+- `Editing`: bundled author masks, matched destination photographs, Core Image utilities, Vision abstraction, mask policy, revision gate, catalog fallback, and optional LCM boundary.
+- `Experience`: `@MainActor @Observable` coordination, a revision-safe 5.4-second reconstruction timeline, Core Motion, Core Haptics, diagnostics, and the SwiftUI stage.
 - `Resources`: original food states, transparent add-ons, and local mask policies.
 
-Commerce truth and visual intelligence are intentionally separated. A catalog modifier ID changes the order; a mask or generated patch may only change the preview. The guaranteed stage path uses native SwiftUI drag/drop and keeps every pixel outside the merchant-authored edit mask stable.
+Commerce truth and visual intelligence are intentionally separated. A catalog modifier ID changes the order immediately; visual reconstruction can only change the preview. The guaranteed stage path uses native SwiftUI drag/drop, merchant-authored touch masks, and complete matched destination photographs. Diagnostics explicitly identify the preview as bundled and offline.
 
 ## Honest status
 

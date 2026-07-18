@@ -6,11 +6,12 @@ Tested 18 July 2026 with Xcode 27 beta 3, Swift 6.4, and the iPhone 17 Pro iOS 2
 
 - Simulator app build: passed.
 - Unsigned Release build for generic iOS/arm64: passed.
-- Swift Testing domain/editing suite: 16 tests passed.
+- Swift Testing domain/editing suite: 21 tests passed.
 - UI flow `testCompleteBurgerLoopAndSummary`: passed.
 - UI flow `testDishSwitchingAndAccessibleAddition`: passed.
 - UI flow `testUndoRedoAndResetKeepVisualAndOrderStateTogether`: passed.
 - Native drag flow `testMagneticCheeseDragCommitsOnlyInsideApprovedFoodZone`: passed.
+- Reconstruction flow `testReconstructionAppearsBeforePhotographCommits`: passed and produced an inspected in-progress screenshot.
 - Core loop visually inspected from kept simulator screenshots for burger, pizza, and waffle.
 - App bundle contains all 21 expected PNG resources and `mask_policies.json`.
 - No network or third-party runtime package is present.
@@ -26,13 +27,14 @@ Tested 18 July 2026 with Xcode 27 beta 3, Swift 6.4, and the iPhone 17 Pro iOS 2
 - Stale-revision invalidation.
 - Exact reset/undo/redo restoration, transformed-coordinate inversion, resource resolution, and stable cache keys.
 - Pixel equality for every pixel outside a masked composite region.
+- Revision-safe 5.4-second reconstruction phases, progress clamping, complete matched-state selection, Core Haptics fallback selection, and commerce-before-visual commit.
 - Launch into the burger, tomato removal, native cheese drag, accessible addition, ₹289 summary, undo/redo/reset, and all dish switches.
 
-Total stage-critical automated tests: 20 passed, 0 failed.
+Total stage-critical automated tests: 26 passed, 0 failed (21 unit and 5 UI).
 
-Machine-readable result bundle: `/tmp/DishEditFinal-20260718-2300.xcresult`. `xcresulttool` reports 20 passed, 0 failed, 0 skipped on the iPhone 17 Pro iOS 27.0 simulator.
+Machine-readable result bundles: `/tmp/DishEditFinalUnit-20260719-0020.xcresult` and `/tmp/DishEditFinalUISerial-20260719-0017.xcresult`. The five stage-critical UI flows pass when run serially on the named iPhone 17 Pro iOS 27.0 simulator.
 
-The result bundle contains one Xcode 27 beta simulator runtime warning from the system drag preview (`_UIPlatterView`) during XCUITest. The native cheese drop still completed and its commerce state assertions passed; this must be rechecked on the physical iPhone before the stage build is frozen.
+Xcode 27 beta emits a simulator runtime warning from the system drag preview (`_UIPlatterView`) during XCUITest. A custom preview made the synthesized drop intermittent, so it was removed; the stable native default preview now completes the drop and its commerce assertions. This must still be rechecked on the physical iPhone before the stage build is frozen.
 
 ## Device gate
 

@@ -77,44 +77,21 @@ enum CatalogVisualRenderer {
         let cacheKey = "render:\(dish.id):\(visualStateKey)" as NSString
         if let cached = renderedCache.object(forKey: cacheKey) { return cached }
         let signpostID = signposter.makeSignpostID()
-        let interval = signposter.beginInterval("Catalog mask compositing", id: signpostID)
-        defer { signposter.endInterval("Catalog mask compositing", interval) }
-        guard var result = BundledResource.cgImage(named: dish.baseImageAsset) else { return nil }
-
-        let hasRemoval = visualStateKey == "removed" || visualStateKey == "removed+added"
-        let hasAddition = visualStateKey == "added" || visualStateKey == "removed+added"
-
-        if let removal = dish.removalModifier,
-           hasRemoval,
-           let removalAsset = dish.fallbackStates["removed"]?.assetName,
-           let patch = BundledResource.cgImage(named: removalAsset),
-           let mask = BundledResource.cgImage(named: removal.authorMaskAsset),
-           let composite = try? ImageCompositor.blend(
-               original: result,
-               patch: patch,
-               mask: mask,
-               context: context
-           ) {
-            result = composite
-        }
-
-        if let addition = dish.additionModifier,
-           hasAddition,
-           let patchAsset = dish.fallbackStates[visualStateKey]?.assetName,
-           let patch = BundledResource.cgImage(named: patchAsset),
-           let mask = BundledResource.cgImage(named: addition.authorMaskAsset),
-           let composite = try? ImageCompositor.blend(
-               original: result,
-               patch: patch,
-               mask: mask,
-               context: context
-           ) {
-            result = composite
-        }
+        let interval = signposter.beginInterval("Matched catalog photograph", id: signpostID)
+        defer { signposter.endInterval("Matched catalog photograph", interval) }
+        let selectedAsset = assetName(for: dish, visualStateKey: visualStateKey)
+        guard let result = BundledResource.cgImage(named: selectedAsset) else { return nil }
 
         let image = UIImage(cgImage: result)
         renderedCache.setObject(image, forKey: cacheKey)
         return image
+    }
+
+    static func assetName(
+        for dish: DishDefinition,
+        visualStateKey: VisualStateKey
+    ) -> String {
+        dish.fallbackStates[visualStateKey]?.assetName ?? dish.baseImageAsset
     }
 
     static func ingredientCutout(imageAsset: String, maskAsset: String) -> UIImage? {

@@ -27,10 +27,10 @@
 **Interfaces:**
 - Produces: `ReconstructionTimeline`, `ReconstructionPhase`
 
-- [ ] Write tests for phase boundaries and clamped progress.
-- [ ] Run the focused suite and verify the new tests fail because the types do not exist.
-- [ ] Implement the timeline values.
-- [ ] Run the focused suite and verify it passes.
+- [x] Write tests for phase boundaries and clamped progress.
+- [x] Run the focused suite and verify the new tests fail because the types do not exist.
+- [x] Implement the timeline values.
+- [x] Run the focused suite and verify it passes.
 
 ### Task 2: Revision-bound presentation state
 
@@ -41,10 +41,10 @@
 **Interfaces:**
 - Produces: `displayedVisualStateKey`, `reconstruction`, `completeReconstruction(revision:)`
 
-- [ ] Write tests proving commerce commits immediately and stale completion is rejected.
-- [ ] Run the focused suite and verify red.
-- [ ] Implement cancellable, revision-bound presentation state.
-- [ ] Run the focused suite and verify green.
+- [x] Write tests proving commerce commits immediately and stale completion is rejected.
+- [x] Run the focused suite and verify red.
+- [x] Implement cancellable, revision-bound presentation state.
+- [x] Run the focused suite and verify green.
 
 ### Task 3: Mask-local reconstruction treatment
 
@@ -56,10 +56,10 @@
 - Consumes: coordinator reconstruction state and author-mask assets.
 - Produces: five-second on-device processing overlay and final crossfade.
 
-- [ ] Add an XCUITest assertion for the reconstruction indicator.
-- [ ] Run it and verify red.
-- [ ] Implement scan, particle, phase-label and Reduce Motion presentations.
-- [ ] Run it and verify green.
+- [x] Add an XCUITest assertion for the reconstruction indicator.
+- [x] Run it and verify red.
+- [x] Implement scan, particle, phase-label and Reduce Motion presentations.
+- [x] Run it and verify green.
 
 ### Task 4: Core Haptics progression
 
@@ -70,10 +70,10 @@
 **Interfaces:**
 - Produces: start, phase and completion haptics with UIKit fallback.
 
-- [ ] Add unit-testable capability-selection tests.
-- [ ] Verify red.
-- [ ] Implement the Core Haptics engine and fallback.
-- [ ] Verify green.
+- [x] Add unit-testable capability-selection tests.
+- [x] Verify red.
+- [x] Implement the Core Haptics engine and fallback.
+- [x] Verify green.
 
 ### Task 5: Matched visual assets and masks
 
@@ -89,18 +89,17 @@
 **Interfaces:**
 - Produces: stable 1536×1536 destination photographs and updated edit masks.
 
-- [ ] Generate precise edits from each base image.
-- [ ] Inspect geometry, lighting, plate and crop continuity.
-- [ ] Regenerate author masks from accepted states.
-- [ ] Update provenance and checksums.
+- [x] Generate precise edits from each base image.
+- [x] Inspect geometry, lighting, plate and crop continuity.
+- [x] Confirm the base-image author masks still match removal targets and accepted add-on zones.
+- [x] Update provenance and checksums.
 
 ### Task 6: End-to-end verification
 
 **Files:**
 - Modify: `TEST_REPORT.md`, `IMPLEMENTATION_STATUS.md`, `DEMO_SCRIPT.md`
 
-- [ ] Run clean Simulator and unsigned arm64 device builds.
-- [ ] Run all unit and stage-critical UI tests without parallel testing.
-- [ ] Extract and inspect final screenshots.
-- [ ] Record exact live, prepared and simulated behavior.
-
+- [x] Run clean Simulator and unsigned arm64 device builds.
+- [x] Run all unit and stage-critical UI tests without parallel testing.
+- [x] Extract and inspect final screenshots.
+- [x] Record exact live, prepared and simulated behavior.

@@ -13,7 +13,7 @@ final class DishEditUITests: XCTestCase {
         let stage = app.descendants(matching: .any)["dish.stage"]
         XCTAssertTrue(stage.waitForExistence(timeout: 8))
 
-        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.55)).tap()
+        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.57)).tap()
         XCTAssertTrue(app.buttons["No tomato"].waitForExistence(timeout: 2))
 
         app.buttons["modifier.add"].tap()
@@ -23,6 +23,8 @@ final class DishEditUITests: XCTestCase {
         app.buttons["order.summary"].tap()
         XCTAssertTrue(app.navigationBars["Order truth"].waitForExistence(timeout: 2))
         app.buttons["Done"].tap()
+
+        XCTAssertTrue(app.staticTexts["Visual preview ready"].waitForExistence(timeout: 7))
 
         let screenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
         screenshot.name = "Burger — tomato removed, cheese added"
@@ -59,7 +61,7 @@ final class DishEditUITests: XCTestCase {
 
         let stage = app.descendants(matching: .any)["dish.stage"]
         XCTAssertTrue(stage.waitForExistence(timeout: 8))
-        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.55)).tap()
+        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.57)).tap()
         XCTAssertTrue(app.buttons["No tomato"].waitForExistence(timeout: 2))
 
         app.buttons["Undo"].tap()
@@ -102,10 +104,14 @@ final class DishEditUITests: XCTestCase {
 
         let stage = app.descendants(matching: .any)["dish.stage"]
         XCTAssertTrue(stage.waitForExistence(timeout: 8))
-        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.55)).tap()
+        stage.coordinate(withNormalizedOffset: CGVector(dx: 0.50, dy: 0.57)).tap()
 
         XCTAssertTrue(app.staticTexts["ON-DEVICE PREVIEW"].waitForExistence(timeout: 2))
         XCTAssertTrue(app.buttons["No tomato"].exists)
+        let processingScreenshot = XCTAttachment(screenshot: XCUIScreen.main.screenshot())
+        processingScreenshot.name = "On-device reconstruction in progress"
+        processingScreenshot.lifetime = .keepAlways
+        add(processingScreenshot)
         XCTAssertTrue(app.staticTexts["Visual preview ready"].waitForExistence(timeout: 7))
     }
 
