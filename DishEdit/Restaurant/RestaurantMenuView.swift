@@ -23,7 +23,6 @@ struct RestaurantMenuView: View {
                             onAdd: { coordinator.addDefaultProduct(productID: product.id) },
                             onEditVisually: { coordinator.beginVisualCustomization(productID: product.id) }
                         )
-                        .accessibilityIdentifier("menu.product.\(product.id)")
                     }
                 }
                 .padding(.horizontal, 16)
@@ -174,5 +173,7 @@ struct ProductCardView: View {
         }
         .padding(16)
         .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 16))
+        .accessibilityElement(children: .contain)
+        .accessibilityIdentifier("menu.product.\(product.id)")
     }
 }
