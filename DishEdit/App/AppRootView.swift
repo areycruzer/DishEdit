@@ -11,7 +11,7 @@ struct AppRootView: View {
             case .restaurant:
                 RestaurantMenuView(coordinator: coordinator)
             case .customize(let productID):
-                LegacyEditorBridge(coordinator: coordinator, productID: productID)
+                VisualEditorView(appCoordinator: coordinator, productID: productID)
             case .instructions(let productID):
                 InstructionPlaceholder(coordinator: coordinator, productID: productID)
             case .checkout:
