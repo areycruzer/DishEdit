@@ -1,5 +1,20 @@
 # Validation Report
 
+## End-to-end baseline — 19 July 2026
+
+Tested 19 July 2026 with Xcode 27 beta 3 (27A5218g), Swift 6.4, iPhone 17 Pro iOS 27.0 simulator.
+
+- Build: **SUCCEEDED** (Debug, unsigned, iOS Simulator arm64)
+- Unit tests (DishEditTests): **21/21 passed** in 0.058 s
+- UI tests (DishEditUITests): **6/6 passed** in 121 s (serial)
+- Total automated: **27/27 passed, 0 failures**
+
+This baseline covers the existing Burger/Pizza/Waffle prototype before the end-to-end Copper & Crumb evolution begins.
+
+---
+
+## Previous report
+
 Tested 18 July 2026 with Xcode 27 beta 3, Swift 6.4, and the iPhone 17 Pro iOS 27.0 simulator.
 
 ## Passing evidence
