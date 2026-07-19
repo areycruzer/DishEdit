@@ -25,6 +25,7 @@ final class AppCoordinator {
     private(set) var customerNote: String = ""
     private(set) var allergyAcknowledged: Bool = false
     private(set) var lastOrderID: String?
+    var generationPreference: VisualGenerationPreference = .automatic
 
     init(
         restaurant: RestaurantDefinition = DemoRestaurantCatalog.copperAndCrumb,

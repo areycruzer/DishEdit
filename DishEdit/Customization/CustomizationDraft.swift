@@ -56,6 +56,14 @@ nonisolated struct CustomizationDraft: Equatable, Sendable {
         presentIngredientIDs != product.defaultIngredientIDs
     }
 
+    var removedIngredientIDs: Set<String> {
+        product.defaultIngredientIDs.subtracting(presentIngredientIDs)
+    }
+
+    var addedIngredientIDs: Set<String> {
+        presentIngredientIDs.subtracting(product.defaultIngredientIDs)
+    }
+
     // MARK: - Mutations
 
     mutating func remove(ingredientID: String) -> CustomizationMutation {
