@@ -56,7 +56,7 @@ struct ContentView: View {
             if newValue { motion.stop() } else { motion.start() }
         }
         .sheet(isPresented: $showSummary) { OrderSummaryView(coordinator: coordinator) }
-        .sheet(isPresented: $showDiagnostics) { DiagnosticsView(coordinator: coordinator) }
+        .sheet(isPresented: $showDiagnostics) { LegacyDiagnosticsView(coordinator: coordinator) }
     }
 
     private var header: some View {
@@ -563,7 +563,7 @@ private struct OrderSummaryView: View {
     }
 }
 
-private struct DiagnosticsView: View {
+private struct LegacyDiagnosticsView: View {
     @Bindable var coordinator: DishEditCoordinator
     @Environment(\.dismiss) private var dismiss
 

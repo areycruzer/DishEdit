@@ -63,6 +63,7 @@ struct VisualEditorView: View {
                     modifierSummary: coordinator.modifierSummary,
                     basePricePaise: coordinator.product.basePricePaise,
                     priceDeltaPaise: coordinator.priceDeltaPaise,
+                    previewAssetName: coordinator.previewAssetName,
                     onDone: {
                         coordinator.finishReassembly()
                         appCoordinator.confirmCustomization(productID: productID)

@@ -18,10 +18,15 @@ final class CustomizationCoordinator {
     let product: ProductDefinition
     private(set) var draft: CustomizationDraft
     private(set) var phase: EditorPhase = .opening
+    private(set) var previewAssetName: String?
+
+    private let previewEngine: ReviewedPreviewEngine
 
     init(product: ProductDefinition) {
         self.product = product
         self.draft = CustomizationDraft(product: product)
+        self.previewEngine = ReviewedPreviewEngine()
+        self.previewAssetName = product.assembledAssetName
     }
 
     var revision: UInt64 { draft.revision }
@@ -52,6 +57,7 @@ final class CustomizationCoordinator {
 
     func confirm() {
         phase = .reassembling
+        Task { await updatePreview() }
     }
 
     func finishReassembly() {
@@ -62,31 +68,63 @@ final class CustomizationCoordinator {
 
     @discardableResult
     func removeIngredient(id: String) -> CustomizationMutation {
-        draft.remove(ingredientID: id)
+        let result = draft.remove(ingredientID: id)
+        Task { await updatePreview() }
+        return result
     }
 
     @discardableResult
     func addIngredient(id: String) -> CustomizationMutation {
-        draft.add(ingredientID: id)
+        let result = draft.add(ingredientID: id)
+        Task { await updatePreview() }
+        return result
     }
 
     @discardableResult
     func restoreIngredient(id: String) -> CustomizationMutation {
-        draft.restore(ingredientID: id)
+        let result = draft.restore(ingredientID: id)
+        Task { await updatePreview() }
+        return result
     }
 
     @discardableResult
     func undo() -> CustomizationMutation {
-        draft.undo()
+        let result = draft.undo()
+        Task { await updatePreview() }
+        return result
     }
 
     @discardableResult
     func redo() -> CustomizationMutation {
-        draft.redo()
+        let result = draft.redo()
+        Task { await updatePreview() }
+        return result
     }
 
     @discardableResult
     func reset() -> CustomizationMutation {
-        draft.reset()
+        let result = draft.reset()
+        previewAssetName = product.assembledAssetName
+        return result
+    }
+
+    // MARK: - Preview
+
+    private func updatePreview() async {
+        let request = PreviewRequest(
+            product: product,
+            removedIngredientIDs: draft.removedIngredientIDs,
+            addedIngredientIDs: draft.addedIngredientIDs,
+            revision: draft.revision
+        )
+        let result = await previewEngine.previewImage(for: request)
+        switch result {
+        case .reviewed(let assetName):
+            previewAssetName = assetName
+        case .generated(_, let cacheKey):
+            previewAssetName = cacheKey
+        case .unavailable:
+            previewAssetName = product.assembledAssetName
+        }
     }
 }

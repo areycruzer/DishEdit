@@ -7,6 +7,7 @@ struct ReassemblyOverlay: View {
     let modifierSummary: [ModifierSummaryItem]
     let basePricePaise: Int
     let priceDeltaPaise: Int
+    let previewAssetName: String?
     let onDone: () -> Void
 
     var body: some View {
@@ -15,7 +16,7 @@ struct ReassemblyOverlay: View {
 
             VStack(spacing: 16) {
                 // Assembled image
-                BundledImage.image(named: product.assembledAssetName)
+                BundledImage.image(named: previewAssetName ?? product.assembledAssetName)
                     .resizable()
                     .scaledToFit()
                     .frame(width: 180, height: 180)
