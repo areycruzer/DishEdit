@@ -7,10 +7,8 @@ nonisolated struct CartItem: Identifiable, Equatable, Sendable {
     let productID: String
     let productName: String
     let basePricePaise: Int
-    let modifiers: [ModifierSummaryItem]
-    let customerNote: String
-    let allergyAcknowledged: Bool
     let priceDeltaPaise: Int
+    let instructions: String?
 
     var totalPricePaise: Int {
         basePricePaise + priceDeltaPaise

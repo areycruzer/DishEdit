@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - App Root View
-
 struct AppRootView: View {
     @State private var coordinator = AppCoordinator()
 
@@ -11,22 +9,15 @@ struct AppRootView: View {
             case .restaurant:
                 RestaurantMenuView(coordinator: coordinator)
             case .customize(let productID):
-                VisualEditorView(appCoordinator: coordinator, productID: productID)
-            case .instructions(let productID):
-                InstructionReviewView(coordinator: coordinator, productID: productID)
+                DishEditEditorView(dishID: productID, appCoordinator: coordinator)
             case .checkout:
                 CheckoutView(coordinator: coordinator)
             case .confirmation(let orderID):
                 OrderConfirmationView(coordinator: coordinator, orderID: orderID)
-            case .settings:
-                GenerationSettingsView(coordinator: coordinator)
-            case .diagnostics:
-                DiagnosticsView(coordinator: coordinator)
             }
         }
         .animation(.easeInOut(duration: 0.28), value: coordinator.route)
     }
 }
-
 
 #Preview { AppRootView() }

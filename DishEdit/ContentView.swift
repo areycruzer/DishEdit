@@ -1,14 +1,25 @@
 import SwiftUI
 
-struct ContentView: View {
-    @State private var coordinator = DishEditCoordinator()
+struct DishEditEditorView: View {
+    let dishID: String
+    @Bindable var appCoordinator: AppCoordinator
+    @State private var coordinator: DishEditCoordinator
     @State private var motion = MotionController()
     @State private var isDropValid = false
     @State private var beforeAfterFraction: CGFloat?
     @State private var stageNavigation = StageNavigation()
     @State private var showSummary = false
     @State private var showDiagnostics = false
+    @State private var isAddingToCart = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    init(dishID: String, appCoordinator: AppCoordinator) {
+        self.dishID = dishID
+        self.appCoordinator = appCoordinator
+        let catalog = DishCatalog.preview
+        let singleDishCatalog = DishCatalog(dishes: catalog.dishes.filter { $0.id == dishID })
+        self._coordinator = State(initialValue: DishEditCoordinator(catalog: singleDishCatalog))
+    }
 
     var body: some View {
         ZStack {
@@ -18,10 +29,6 @@ struct ContentView: View {
                 header
                     .padding(.horizontal, 20)
                     .padding(.top, 8)
-
-                dishSelector
-                    .padding(.horizontal, 20)
-                    .padding(.top, 9)
 
                 DishStage(
                     coordinator: coordinator,
@@ -61,6 +68,14 @@ struct ContentView: View {
 
     private var header: some View {
         HStack(alignment: .center) {
+            Button { appCoordinator.goBack() } label: {
+                Image(systemName: "chevron.left")
+                    .font(.title3.weight(.semibold))
+                    .frame(width: 42, height: 42)
+            }
+            .buttonStyle(.glass)
+            .accessibilityLabel("Back to menu")
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("DishEdit")
                     .font(.system(size: 28, weight: .bold, design: .rounded))
@@ -68,6 +83,7 @@ struct ContentView: View {
                     .font(.subheadline.weight(.medium))
                     .foregroundStyle(.secondary)
             }
+            .padding(.leading, 6)
 
             Spacer()
 
@@ -106,27 +122,6 @@ struct ContentView: View {
         .contentTransition(.numericText())
     }
 
-    private var dishSelector: some View {
-        HStack(spacing: 7) {
-            ForEach(coordinator.catalog.dishes) { dish in
-                Button { coordinator.selectDish(dish.id) } label: {
-                    Text(dish.id.capitalized)
-                        .font(.caption.weight(.bold))
-                        .lineLimit(1)
-                        .padding(.horizontal, 12)
-                        .frame(height: 34)
-                        .frame(maxWidth: .infinity)
-                        .background(coordinator.selectedDishID == dish.id ? .red.opacity(0.22) : .white.opacity(0.035), in: Capsule())
-                        .overlay(Capsule().stroke(coordinator.selectedDishID == dish.id ? .red.opacity(0.8) : .white.opacity(0.1), lineWidth: 0.8))
-                }
-                .buttonStyle(.plain)
-                .accessibilityIdentifier("dish.select.\(dish.id)")
-                .accessibilityLabel("Select \(dish.name)")
-                .accessibilityAddTraits(coordinator.selectedDishID == dish.id ? .isSelected : [])
-            }
-        }
-    }
-
     private var bottomBar: some View {
         HStack(spacing: 10) {
             Button(action: coordinator.undo) { Image(systemName: "arrow.uturn.backward") }
@@ -141,13 +136,36 @@ struct ContentView: View {
 
             Spacer()
 
-            Button { showSummary = true } label: {
+            Button {
+                guard !isAddingToCart else { return }
+                isAddingToCart = true
+                Task {
+                    let instructions = await InstructionGenerator.generate(
+                        dishName: coordinator.dish.name,
+                        modifiers: coordinator.activeModifiers
+                    )
+                    let priceDelta = coordinator.totalPricePaise - coordinator.dish.basePricePaise
+                    appCoordinator.addCustomizedProduct(
+                        productID: dishID,
+                        priceDelta: priceDelta,
+                        instructions: instructions
+                    )
+                    appCoordinator.showCheckout()
+                    isAddingToCart = false
+                }
+            } label: {
                 HStack(spacing: 10) {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Text("Your dish").font(.caption2).foregroundStyle(.secondary)
-                        Text(INR.format(coordinator.totalPricePaise)).font(.headline)
+                    if isAddingToCart {
+                        ProgressView()
+                            .tint(.white)
+                            .scaleEffect(0.8)
+                    } else {
+                        VStack(alignment: .leading, spacing: 0) {
+                            Text("Your dish").font(.caption2).foregroundStyle(.secondary)
+                            Text(INR.format(coordinator.totalPricePaise)).font(.headline)
+                        }
+                        Image(systemName: "arrow.up.right")
                     }
-                    Image(systemName: "arrow.up.right")
                 }
                 .padding(.horizontal, 16)
                 .frame(height: 50)
@@ -775,4 +793,4 @@ private struct ReconstructionOverlay: View {
     }
 }
 
-#Preview { ContentView() }
+#Preview { DishEditEditorView(dishID: "burger", appCoordinator: AppCoordinator()) }

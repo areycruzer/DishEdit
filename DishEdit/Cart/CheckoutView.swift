@@ -192,10 +192,18 @@ private struct CartItemRow: View {
                 Text(item.productName)
                     .font(.subheadline.weight(.medium))
 
-                if !item.modifiers.isEmpty {
-                    Text(item.modifiers.map(\.label).joined(separator: ", "))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                if let instructions = item.instructions {
+                    HStack(spacing: 4) {
+                        Image(systemName: "apple.intelligence")
+                            .font(.caption2)
+                            .foregroundStyle(.purple)
+                        Text(instructions)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.purple.opacity(0.08), in: RoundedRectangle(cornerRadius: 6))
                 }
             }
 

@@ -33,29 +33,20 @@ final class CartStore {
             productID: product.id,
             productName: product.name,
             basePricePaise: product.basePricePaise,
-            modifiers: [],
-            customerNote: "",
-            allergyAcknowledged: false,
-            priceDeltaPaise: 0
+            priceDeltaPaise: 0,
+            instructions: nil
         )
         items.append(item)
     }
 
-    func addCustomized(
-        product: ProductDefinition,
-        draft: CustomizationDraft,
-        customerNote: String,
-        allergyAcknowledged: Bool
-    ) {
+    func addCustomized(product: ProductDefinition, priceDelta: Int, instructions: String?) {
         let item = CartItem(
             id: UUID().uuidString,
             productID: product.id,
             productName: product.name,
             basePricePaise: product.basePricePaise,
-            modifiers: draft.modifierSummary,
-            customerNote: customerNote,
-            allergyAcknowledged: allergyAcknowledged,
-            priceDeltaPaise: draft.priceDeltaPaise
+            priceDeltaPaise: priceDelta,
+            instructions: instructions
         )
         items.append(item)
     }

@@ -257,7 +257,7 @@ private struct ProductRow: View {
                 }
                 .accessibilityIdentifier("menu.edit-visually.\(product.id)")
             }
-            .offset(y: -14)
+            .padding(.top, 6)
         }
     }
 }
