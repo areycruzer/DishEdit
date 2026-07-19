@@ -29,10 +29,20 @@ final class AppCoordinator {
 
     init(
         restaurant: RestaurantDefinition = DemoRestaurantCatalog.copperAndCrumb,
-        cart: CartStore = CartStore()
+        cart: CartStore = CartStore(),
+        launchArguments: [String] = ProcessInfo.processInfo.arguments
     ) {
         self.restaurant = restaurant
         self.cart = cart
+
+        if let flagIndex = launchArguments.firstIndex(of: "-DishEditDemoProduct"),
+           launchArguments.indices.contains(flagIndex + 1) {
+            let productID = launchArguments[flagIndex + 1]
+            if let product = restaurant.product(id: productID) {
+                drafts[productID] = CustomizationDraft(product: product)
+                route = .customize(productID: productID)
+            }
+        }
     }
 
     // MARK: - Navigation
@@ -127,6 +137,12 @@ final class AppCoordinator {
     func updateDraft(for productID: String, _ mutation: (inout CustomizationDraft) -> Void) {
         guard var draft = drafts[productID] else { return }
         mutation(&draft)
+        drafts[productID] = draft
+    }
+
+    func replaceDraft(_ draft: CustomizationDraft, for productID: String) {
+        guard draft.productID == productID,
+              restaurant.product(id: productID) != nil else { return }
         drafts[productID] = draft
     }
 

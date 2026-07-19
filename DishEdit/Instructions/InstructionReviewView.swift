@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - Instruction Review View
-
 struct InstructionReviewView: View {
     @Bindable var coordinator: AppCoordinator
     let productID: String
@@ -9,34 +7,37 @@ struct InstructionReviewView: View {
     @State private var proposal: InstructionProposal?
     @State private var validation: InstructionValidationResult?
     @State private var showAllergySheet = false
+    @State private var isDrafting = true
+    @FocusState private var isCustomerNoteFocused: Bool
 
-    private var product: ProductDefinition? {
-        coordinator.restaurant.product(id: productID)
-    }
-
-    private var draft: CustomizationDraft? {
-        coordinator.drafts[productID]
-    }
+    private var product: ProductDefinition? { coordinator.restaurant.product(id: productID) }
+    private var draft: CustomizationDraft? { coordinator.drafts[productID] }
 
     var body: some View {
-        VStack(spacing: 0) {
-            headerBar
-            ScrollView {
-                VStack(spacing: 24) {
-                    instructionList
-                    customerNoteSection
-                    if let proposal, !proposal.allergenFlags.isEmpty {
-                        allergenBanner
+        ZStack(alignment: .bottom) {
+            DishEditBackdrop()
+
+            VStack(spacing: 0) {
+                headerBar
+                ScrollView {
+                    VStack(spacing: 16) {
+                        dishRecap
+                        kitchenInstructionCard
+                        customerNoteCard
+                        allergenNotice
+                        intelligenceDisclosure
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 120)
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
+                .scrollDismissesKeyboard(.interactively)
             }
+
             commitBar
         }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground))
-        .task { generateProposal() }
+        .preferredColorScheme(.dark)
+        .task { await generateProposal() }
         .sheet(isPresented: $showAllergySheet) {
             AllergyAcknowledgementSheet(
                 allergens: proposal?.allergenFlags ?? [],
@@ -45,165 +46,286 @@ struct InstructionReviewView: View {
             )
             .presentationDetents([.medium])
         }
-        .accessibilityIdentifier("instructions.\(productID)")
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") {
+                    isCustomerNoteFocused = false
+                }
+                .accessibilityIdentifier("customerNote.done")
+            }
+        }
     }
-
-    // MARK: - Header
 
     private var headerBar: some View {
-        HStack {
+        HStack(spacing: 12) {
             Button { coordinator.goBack() } label: {
                 Image(systemName: "chevron.left")
-                    .font(.body.bold())
             }
+            .buttonStyle(DishGlassIconButtonStyle())
             .accessibilityLabel("Back")
 
+            VStack(alignment: .leading, spacing: 1) {
+                Text("STEP 2 OF 3")
+                    .font(.system(size: 9, weight: .black))
+                    .tracking(1.2)
+                    .foregroundStyle(Color.dishRed)
+                Text("Confirm the kitchen brief")
+                    .font(.headline)
+            }
+
             Spacer()
 
-            Text("Review Order")
-                .font(.headline)
-
-            Spacer()
-
-            Color.clear.frame(width: 24, height: 24)
+            Image(systemName: "text.document.fill")
+                .foregroundStyle(Color.dishWarm)
         }
-        .padding(.horizontal, 20)
-        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
     }
 
-    // MARK: - Instruction List
+    @ViewBuilder
+    private var dishRecap: some View {
+        if let product {
+            HStack(spacing: 14) {
+                BundledImage.image(named: product.visualPreviewAsset(
+                    removedIngredientIDs: draft?.removedIngredientIDs ?? [],
+                    addedIngredientIDs: draft?.addedIngredientIDs ?? []
+                ) ?? product.assembledAssetName)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 106, height: 96)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-    private var instructionList: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Kitchen Instructions")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
+                VStack(alignment: .leading, spacing: 5) {
+                    DishStatusPill(icon: "checkmark", text: "VISUAL EDIT SAVED", tint: .dishSuccess)
+                    Text(product.name)
+                        .font(.title3.bold())
+                    Text("Every visual change becomes a structured restaurant instruction.")
+                        .font(.caption)
+                        .foregroundStyle(Color.dishMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+            }
+            .padding(12)
+            .dishCard(radius: 24)
+        }
+    }
 
-            if let proposal {
+    private var kitchenInstructionCard: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("KITCHEN INSTRUCTIONS")
+                        .font(.system(size: 10, weight: .black))
+                        .tracking(1.4)
+                        .foregroundStyle(Color.dishRed)
+                    Text("Restaurant-readable, not AI guesswork")
+                        .font(.caption)
+                        .foregroundStyle(Color.dishMuted)
+                }
+                Spacer()
+                if isDrafting {
+                    ProgressView().tint(Color.dishRed)
+                } else {
+                    Image(systemName: "checkmark.seal.fill")
+                        .foregroundStyle(Color.dishSuccess)
+                }
+            }
+
+            if let proposal, !proposal.instructions.isEmpty {
                 ForEach(proposal.instructions) { instruction in
                     InstructionRow(instruction: instruction)
                 }
+            } else if isDrafting {
+                HStack(spacing: 10) {
+                    ProgressView().tint(.white)
+                    Text("Turning your visual edits into a kitchen brief…")
+                        .font(.subheadline)
+                        .foregroundStyle(Color.dishMuted)
+                }
+                .padding(.vertical, 10)
             } else {
-                Text("No modifications")
-                    .foregroundStyle(.tertiary)
+                Label("Prepare as listed by the restaurant", systemImage: "checkmark.circle.fill")
+                    .font(.subheadline.weight(.medium))
+                    .foregroundStyle(Color.dishSuccess)
             }
 
             if let validation, !validation.warnings.isEmpty {
                 ForEach(validation.warnings, id: \.self) { warning in
                     Label(warning, systemImage: "exclamationmark.triangle.fill")
                         .font(.caption)
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(Color.dishWarm)
                 }
             }
         }
+        .padding(17)
+        .dishCard(radius: 22)
     }
 
-    // MARK: - Customer Note
-
-    private var customerNoteSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text("Note for Kitchen")
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(.secondary)
-
-            TextField("Any special requests...", text: Binding(
-                get: { coordinator.customerNote },
-                set: { coordinator.updateCustomerNote($0) }
-            ), axis: .vertical)
-            .lineLimit(2...4)
-            .textFieldStyle(.roundedBorder)
-        }
-    }
-
-    // MARK: - Allergen Banner
-
-    private var allergenBanner: some View {
-        Button { showAllergySheet = true } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "allergens")
-                    .font(.title3)
-                    .foregroundStyle(.orange)
-
+    private var customerNoteCard: some View {
+        VStack(alignment: .leading, spacing: 11) {
+            HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("Allergen Information")
-                        .font(.subheadline.weight(.semibold))
-                    Text(allergenSummaryText)
+                    Text("TELL THE KITCHEN NATURALLY")
+                        .font(.system(size: 10, weight: .black))
+                        .tracking(1.2)
+                        .foregroundStyle(Color.dishRed)
+                    Text("For preferences the visual editor cannot express")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.dishMuted)
                 }
-
                 Spacer()
+                Label("Apple Intelligence", systemImage: "apple.intelligence")
+                    .font(.system(size: 9, weight: .bold))
+                    .foregroundStyle(Color.dishWarm)
+            }
 
-                if coordinator.allergyAcknowledged {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                } else {
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(.secondary)
+            TextField(
+                "For example: I don't like onions. Please pack sauce separately.",
+                text: Binding(
+                    get: { coordinator.customerNote },
+                    set: { coordinator.updateCustomerNote($0) }
+                ),
+                axis: .vertical
+            )
+            .textFieldStyle(.plain)
+            .font(.body)
+            .lineLimit(3...5)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 14)
+            .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
+            .background(Color.black.opacity(0.3), in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+            .overlay {
+                RoundedRectangle(cornerRadius: 17, style: .continuous)
+                    .stroke(Color.white.opacity(0.09), lineWidth: 0.8)
+                    .allowsHitTesting(false)
+            }
+            .focused($isCustomerNoteFocused)
+            .submitLabel(.done)
+            .onSubmit { isCustomerNoteFocused = false }
+            .accessibilityLabel("Kitchen note")
+            .accessibilityIdentifier("customerNote")
+
+            Label("Natural language is added as a note; ingredient IDs still come from the restaurant catalog.", systemImage: "lock.shield.fill")
+                .font(.system(size: 9))
+                .foregroundStyle(Color.dishMuted)
+        }
+        .padding(17)
+        .dishCard(radius: 22)
+    }
+
+    private var allergenNotice: some View {
+        Button { showAllergySheet = true } label: {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.title3)
+                    .foregroundStyle(Color.dishWarm)
+
+                VStack(alignment: .leading, spacing: 5) {
+                    Text("Allergen confirmation")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white)
+                    Text("The restaurant cannot guarantee an allergen-free preparation. Contact the restaurant if you have a severe allergy.")
+                        .font(.caption)
+                        .foregroundStyle(Color.dishMuted)
+                        .fixedSize(horizontal: false, vertical: true)
+                    if let flags = proposal?.allergenFlags, !flags.isEmpty {
+                        Text("Catalog flags: \(flags.sorted().joined(separator: ", "))")
+                            .font(.caption2.bold())
+                            .foregroundStyle(Color.dishWarm)
+                    } else if noteMentionsAllergy {
+                        Text("Your kitchen note mentions an allergy — acknowledgement required")
+                            .font(.caption2.bold())
+                            .foregroundStyle(Color.dishWarm)
+                    }
                 }
+
+                Spacer(minLength: 4)
+                Image(systemName: coordinator.allergyAcknowledged ? "checkmark.circle.fill" : "chevron.right")
+                    .foregroundStyle(coordinator.allergyAcknowledged ? Color.dishSuccess : Color.dishMuted)
             }
             .padding(16)
-            .background(.orange.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
+            .background(Color.dishWarm.opacity(0.08), in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: 20, style: .continuous)
+                    .stroke(Color.dishWarm.opacity(0.28), lineWidth: 0.8)
+            )
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("allergenBanner")
     }
 
-    private var allergenSummaryText: String {
-        guard let flags = proposal?.allergenFlags, !flags.isEmpty else { return "" }
-        return "Contains: " + flags.sorted().joined(separator: ", ")
+    private var intelligenceDisclosure: some View {
+        Label(
+            proposal?.isDeterministic == false ? "Drafted on device and validated against the catalog" : "Catalog fallback active — no network needed",
+            systemImage: proposal?.isDeterministic == false ? "apple.intelligence" : "checkmark.shield.fill"
+        )
+        .font(.caption)
+        .foregroundStyle(Color.dishMuted)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
     }
 
-    // MARK: - Commit Bar
-
     private var commitBar: some View {
-        VStack(spacing: 12) {
-            Divider()
+        VStack(spacing: 8) {
             Button {
                 coordinator.commitToCart(productID: productID)
             } label: {
-                Text("Add to Cart")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                HStack {
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("ADD TO CART")
+                            .font(.system(size: 9, weight: .black))
+                            .tracking(1)
+                        Text("Instructions attached")
+                            .font(.caption.bold())
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.right")
+                }
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
+            .buttonStyle(DishPrimaryButtonStyle())
             .disabled(!canCommit)
-            .padding(.horizontal, 20)
-            .padding(.bottom, 8)
             .accessibilityIdentifier("commitButton")
         }
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 8)
+        .background(.ultraThinMaterial)
     }
 
     private var canCommit: Bool {
-        guard let proposal else { return true }
-        if !proposal.allergenFlags.isEmpty && !coordinator.allergyAcknowledged {
-            return false
-        }
-        return true
+        guard !isDrafting else { return false }
+        let catalogFlags = proposal?.allergenFlags ?? []
+        return (catalogFlags.isEmpty && !noteMentionsAllergy) || coordinator.allergyAcknowledged
     }
 
-    // MARK: - Logic
+    private var noteMentionsAllergy: Bool {
+        let note = coordinator.customerNote.lowercased()
+        let signals = ["allergy", "allergic", "peanut", "nuts", "nut allergy", "gluten", "dairy allergy", "shellfish"]
+        return signals.contains { note.contains($0) }
+    }
 
-    private func generateProposal() {
-        guard let product, let draft else { return }
-        let parser = DeterministicInstructionParser()
-        let generated = parser.parse(product: product, draft: draft)
-
-        if generated.instructions.isEmpty {
-            proposal = nil
-            validation = nil
+    @MainActor
+    private func generateProposal() async {
+        guard let product, let draft else {
+            isDrafting = false
             return
         }
 
+        let drafter = CompositeInstructionDrafter()
+        let generated = await drafter.draft(
+            product: product,
+            customization: draft,
+            strategy: .foundationModelWithFallback
+        )
+        guard !Task.isCancelled else { return }
+
         proposal = generated
-        let validator = InstructionValidator()
-        validation = validator.validate(proposal: generated, against: product)
+        validation = InstructionValidator().validate(proposal: generated, against: product)
+        isDrafting = false
     }
 }
-
-// MARK: - Instruction Row
 
 private struct InstructionRow: View {
     let instruction: KitchenInstruction
@@ -211,68 +333,39 @@ private struct InstructionRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: iconName)
-                .font(.body)
                 .foregroundStyle(iconColor)
-                .frame(width: 28, height: 28)
+                .frame(width: 30, height: 30)
+                .background(iconColor.opacity(0.12), in: Circle())
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(instruction.displayText)
-                    .font(.body)
-                if !instruction.allergenFlags.isEmpty {
-                    Text(instruction.allergenFlags.sorted().joined(separator: ", "))
-                        .font(.caption2)
-                        .foregroundStyle(.orange)
-                }
+                    .font(.subheadline.bold())
+                Text(instruction.detail)
+                    .font(.caption)
+                    .foregroundStyle(Color.dishMuted)
+                    .lineLimit(2)
             }
-
             Spacer()
-
-            confidenceBadge
+            Image(systemName: "checkmark")
+                .font(.caption.bold())
+                .foregroundStyle(Color.dishSuccess)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
+        .padding(12)
+        .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
     }
 
     private var iconName: String {
         switch instruction.verb {
-        case .omit: "minus.circle.fill"
-        case .add: "plus.circle.fill"
+        case .omit: "minus"
+        case .add: "plus"
         case .substitute: "arrow.triangle.swap"
         }
     }
 
     private var iconColor: Color {
-        switch instruction.verb {
-        case .omit: .red
-        case .add: .green
-        case .substitute: .blue
-        }
-    }
-
-    @ViewBuilder
-    private var confidenceBadge: some View {
-        switch instruction.confidence {
-        case .deterministic:
-            EmptyView()
-        case .high:
-            Text("AI")
-                .font(.caption2.bold())
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.blue.opacity(0.15), in: Capsule())
-        case .low:
-            Text("Review")
-                .font(.caption2.bold())
-                .foregroundStyle(.orange)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(.orange.opacity(0.15), in: Capsule())
-        }
+        instruction.verb == .omit ? .dishRed : .dishSuccess
     }
 }
-
-// MARK: - Allergy Acknowledgement Sheet
 
 struct AllergyAcknowledgementSheet: View {
     let allergens: Set<String>
@@ -282,50 +375,41 @@ struct AllergyAcknowledgementSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(spacing: 24) {
-            Image(systemName: "allergens")
-                .font(.system(size: 48))
-                .foregroundStyle(.orange)
+        ZStack {
+            DishEditBackdrop()
+            VStack(spacing: 20) {
+                Image(systemName: "exclamationmark.triangle.fill")
+                    .font(.system(size: 43))
+                    .foregroundStyle(Color.dishWarm)
 
-            Text("Allergen Notice")
-                .font(.title2.bold())
+                Text("Allergen notice")
+                    .font(.title2.bold())
 
-            Text("Your customization includes ingredients that contain the following allergens:")
-                .font(.body)
-                .foregroundStyle(.secondary)
-                .multilineTextAlignment(.center)
+                Text("The restaurant cannot guarantee an allergen-free preparation. Cross-contact may occur in a shared kitchen.")
+                    .font(.body)
+                    .foregroundStyle(Color.dishMuted)
+                    .multilineTextAlignment(.center)
 
-            VStack(spacing: 8) {
-                ForEach(allergens.sorted(), id: \.self) { allergen in
-                    HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundStyle(.orange)
-                        Text(allergen.capitalized)
-                            .font(.body.weight(.medium))
-                        Spacer()
-                    }
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 10)
-                    .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 8))
+                if !allergens.isEmpty {
+                    Text("Catalog flags: \(allergens.sorted().joined(separator: ", "))")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(Color.dishWarm)
                 }
-            }
 
-            Spacer()
+                Spacer()
 
-            Button {
-                onAcknowledge()
-                dismiss()
-            } label: {
-                Text("I Acknowledge")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                Button {
+                    onAcknowledge()
+                    dismiss()
+                } label: {
+                    Text(isAcknowledged ? "Acknowledged" : "I understand")
+                }
+                .buttonStyle(DishPrimaryButtonStyle())
+                .disabled(isAcknowledged)
+                .accessibilityIdentifier("acknowledgeButton")
             }
-            .buttonStyle(.borderedProminent)
-            .tint(.orange)
-            .disabled(isAcknowledged)
-            .accessibilityIdentifier("acknowledgeButton")
+            .padding(24)
         }
-        .padding(24)
+        .preferredColorScheme(.dark)
     }
 }

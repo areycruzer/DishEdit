@@ -4,7 +4,6 @@ import SwiftUI
 
 struct GenerationSettingsView: View {
     @Bindable var coordinator: AppCoordinator
-    @State private var preference: VisualGenerationPreference = .automatic
     @State private var availability: [GenerationEngineMode: EngineAvailability] = [
         .reviewed: .available,
         .coreAI: .unavailable,
@@ -33,15 +32,12 @@ struct GenerationSettingsView: View {
 
     private var preferencePicker: some View {
         Section {
-            Picker("Engine Selection", selection: $preference) {
+            Picker("Engine Selection", selection: $coordinator.generationPreference) {
                 ForEach(VisualGenerationPreference.allCases, id: \.self) { pref in
                     Text(pref.rawValue).tag(pref)
                 }
             }
             .pickerStyle(.menu)
-            .onChange(of: preference) { _, newValue in
-                coordinator.generationPreference = newValue
-            }
         } header: {
             Text("Preview Engine")
         } footer: {
@@ -50,7 +46,7 @@ struct GenerationSettingsView: View {
     }
 
     private var preferenceDescription: String {
-        switch preference {
+        switch coordinator.generationPreference {
         case .automatic:
             return "Selects the best available engine: Core AI if qualified, then Remote if configured, otherwise Reviewed."
         case .reviewedOnly:
@@ -103,10 +99,9 @@ struct GenerationSettingsView: View {
     private var stageSafeSection: some View {
         Section {
             Toggle("Stage Safe Mode", isOn: Binding(
-                get: { preference == .stageSafe },
+                get: { coordinator.generationPreference == .stageSafe },
                 set: { enabled in
-                    preference = enabled ? .stageSafe : .automatic
-                    coordinator.generationPreference = preference
+                    coordinator.generationPreference = enabled ? .stageSafe : .automatic
                 }
             ))
         } footer: {

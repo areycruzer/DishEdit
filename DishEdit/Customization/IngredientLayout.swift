@@ -93,19 +93,38 @@ nonisolated enum IngredientLayout {
 private nonisolated extension IngredientLayout {
     static func burgerExpanded(product: ProductDefinition) -> [String: IngredientTransform] {
         var transforms: [String: IngredientTransform] = [:]
-        let count = product.ingredients.count
-        let totalSpan = 0.72
-        let spacing = totalSpan / Double(max(count - 1, 1))
-        let startY = 0.14
+        let recipeOrder = [
+            "burger.bun-top",
+            "burger.lettuce",
+            "burger.onion",
+            "burger.tomato",
+            "burger.jalapenos",
+            "burger.cheddar",
+            "burger.patty",
+            "burger.sauce",
+            "burger.bun-bottom"
+        ]
+        let layerY: [String: Double] = [
+            "burger.bun-top": 0.13,
+            "burger.lettuce": 0.24,
+            "burger.onion": 0.35,
+            "burger.tomato": 0.46,
+            "burger.jalapenos": 0.53,
+            "burger.cheddar": 0.60,
+            "burger.patty": 0.67,
+            "burger.sauce": 0.76,
+            "burger.bun-bottom": 0.85
+        ]
 
-        for (index, ingredient) in product.ingredients.enumerated() {
-            let y = startY + Double(index) * spacing
-            let labelSide: Double = index.isMultiple(of: 2) ? -0.32 : 0.32
+        for (catalogIndex, ingredient) in product.ingredients.enumerated() {
+            let layerIndex = recipeOrder.firstIndex(of: ingredient.id) ?? catalogIndex
+            let y = layerY[ingredient.id] ?? (0.13 + Double(layerIndex) * 0.09)
+            let labelSide: Double = layerIndex.isMultiple(of: 2) ? -0.32 : 0.32
             transforms[ingredient.id] = IngredientTransform(
                 center: NormalizedPoint(x: 0.5, y: y),
                 scale: 0.82,
                 rotationDegrees: 0,
-                zIndex: Double(count - index),
+                zIndex: Double(recipeOrder.count - layerIndex),
                 labelOffset: NormalizedPoint(x: labelSide, y: 0),
                 opacity: 1.0
             )
@@ -119,7 +138,7 @@ private nonisolated extension IngredientLayout {
 private nonisolated extension IngredientLayout {
     static func subExpanded(product: ProductDefinition) -> [String: IngredientTransform] {
         var transforms: [String: IngredientTransform] = [:]
-        let count = product.ingredients.count
+        let fillings = product.ingredients.filter { $0.role != .base }
 
         // Bread stays at center-bottom, fillings spread horizontally
         for (index, ingredient) in product.ingredients.enumerated() {
@@ -133,17 +152,19 @@ private nonisolated extension IngredientLayout {
                     opacity: 1.0
                 )
             } else {
-                let fillingIndex = index - 1
-                let fillingCount = count - 1
-                let spacing = 0.72 / Double(max(fillingCount - 1, 1))
-                let x = 0.14 + Double(fillingIndex) * spacing
+                let fillingIndex = fillings.firstIndex(where: { $0.id == ingredient.id }) ?? 0
+                let columns = 5
+                let column = fillingIndex % columns
+                let row = fillingIndex / columns
+                let x = 0.12 + Double(column) * 0.19
+                let y = 0.25 + Double(row) * 0.28
                 let tilt = Double((fillingIndex % 3) - 1) * 3.5
                 transforms[ingredient.id] = IngredientTransform(
-                    center: NormalizedPoint(x: x, y: 0.42),
-                    scale: 0.55,
+                    center: NormalizedPoint(x: x, y: y),
+                    scale: 0.50,
                     rotationDegrees: tilt,
                     zIndex: Double(index),
-                    labelOffset: NormalizedPoint(x: 0, y: -0.12),
+                    labelOffset: counterLabelOffset(column: column, row: row),
                     opacity: 1.0
                 )
             }
@@ -157,7 +178,7 @@ private nonisolated extension IngredientLayout {
 private nonisolated extension IngredientLayout {
     static func tacoExpanded(product: ProductDefinition) -> [String: IngredientTransform] {
         var transforms: [String: IngredientTransform] = [:]
-        let count = product.ingredients.count
+        let fillings = product.ingredients.filter { $0.role != .base }
 
         for (index, ingredient) in product.ingredients.enumerated() {
             if ingredient.role == .base {
@@ -171,29 +192,42 @@ private nonisolated extension IngredientLayout {
                     opacity: 1.0
                 )
             } else {
-                // Fillings fan in a shallow arc
-                let fillingIndex = index - 1
-                let fillingCount = count - 1
-                let arcAngle = 140.0
-                let startAngle = -arcAngle / 2
-                let angleStep = arcAngle / Double(max(fillingCount - 1, 1))
-                let angle = startAngle + Double(fillingIndex) * angleStep
-                let radians = angle * .pi / 180
-                let radius = 0.30
-                let x = 0.5 + sin(radians) * radius
-                let y = 0.44 - cos(radians) * radius * 0.5
-                let rotation = angle * 0.3
+                let fillingIndex = fillings.firstIndex(where: { $0.id == ingredient.id }) ?? 0
+                let columns = 5
+                let column = fillingIndex % columns
+                let row = fillingIndex / columns
+                let x = 0.12 + Double(column) * 0.19
+                let y = 0.24 + Double(row) * 0.27
+                let rotation = Double(column - 2) * 4.0
 
                 transforms[ingredient.id] = IngredientTransform(
                     center: NormalizedPoint(x: x, y: y),
                     scale: 0.50,
                     rotationDegrees: rotation,
                     zIndex: Double(index),
-                    labelOffset: NormalizedPoint(x: 0, y: -0.10),
+                    labelOffset: counterLabelOffset(column: column, row: row),
                     opacity: 1.0
                 )
             }
         }
         return transforms
+    }
+
+    /// Five ingredients fit cleanly across the canvas, but their names do not.
+    /// Stagger neighbouring callouts above and below the food while keeping the
+    /// second row away from the first. Edge labels also lean toward the canvas.
+    static func counterLabelOffset(column: Int, row: Int) -> NormalizedPoint {
+        let x: Double = switch column {
+        case 0: 0.04
+        case 4: -0.04
+        default: 0
+        }
+        let y: Double
+        if row == 0 {
+            y = column.isMultiple(of: 2) ? -0.10 : 0.07
+        } else {
+            y = column.isMultiple(of: 2) ? -0.07 : 0.10
+        }
+        return NormalizedPoint(x: x, y: y)
     }
 }

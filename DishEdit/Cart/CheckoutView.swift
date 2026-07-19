@@ -1,242 +1,284 @@
 import SwiftUI
 
-// MARK: - Checkout View
-
 struct CheckoutView: View {
     @Bindable var coordinator: AppCoordinator
 
     var body: some View {
         ZStack(alignment: .bottom) {
-            ScrollView {
-                VStack(spacing: 12) {
-                    cartItemsSection
-                    addMoreSection
-                    billDetailsSection
-                    deliverySection
-                    cancellationNote
-                }
-                .padding(.top, 8)
-                .padding(.bottom, 90)
-            }
-            .background(Color(.systemGroupedBackground))
-            .safeAreaInset(edge: .top) {
+            DishEditBackdrop()
+
+            VStack(spacing: 0) {
                 checkoutHeader
+                ScrollView {
+                    VStack(spacing: 15) {
+                        arrivalCard
+                        cartItemsSection
+                        addMoreSection
+                        billDetailsSection
+                        deliverySection
+                        cancellationNote
+                    }
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+                    .padding(.bottom, 124)
+                }
             }
 
             placeOrderButton
         }
+        .preferredColorScheme(.dark)
     }
-
-    // MARK: - Header
 
     private var checkoutHeader: some View {
         HStack(spacing: 12) {
             Button { coordinator.goBack() } label: {
-                Image(systemName: "arrow.left")
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(.primary)
-                    .frame(width: 36, height: 36)
-                    .background(Circle().fill(Color(.systemGray6)))
+                Image(systemName: "chevron.left")
+            }
+            .buttonStyle(DishGlassIconButtonStyle())
+            .accessibilityLabel("Back")
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text("STEP 3 OF 3")
+                    .font(.system(size: 9, weight: .black))
+                    .tracking(1.2)
+                    .foregroundStyle(Color.dishRed)
+                Text("Secure checkout")
+                    .font(.headline)
             }
 
-            Text(coordinator.restaurant.name)
-                .font(.headline)
-
             Spacer()
+
+            Text("\(coordinator.cart.itemCount) ITEM")
+                .font(.system(size: 9, weight: .black))
+                .tracking(1)
+                .foregroundStyle(Color.dishMuted)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
     }
 
-    // MARK: - Cart Items
+    private var arrivalCard: some View {
+        HStack(spacing: 13) {
+            ZStack {
+                Circle().fill(Color.dishRed.opacity(0.14))
+                Image(systemName: "scooter")
+                    .font(.title3)
+                    .foregroundStyle(Color.dishRed)
+            }
+            .frame(width: 48, height: 48)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("Arrives in \(coordinator.restaurant.deliveryEstimate)")
+                    .font(.headline)
+                Text("From \(coordinator.restaurant.name) · standard delivery")
+                    .font(.caption)
+                    .foregroundStyle(Color.dishMuted)
+            }
+            Spacer()
+            Image(systemName: "location.fill")
+                .foregroundStyle(Color.dishWarm)
+        }
+        .padding(16)
+        .dishCard(radius: 22)
+    }
 
     private var cartItemsSection: some View {
-        VStack(spacing: 0) {
-            ForEach(Array(coordinator.cart.items.enumerated()), id: \.element.id) { index, item in
-                if index > 0 {
-                    Divider().padding(.leading, 16)
-                }
-                CartItemRow(item: item, onRemove: { coordinator.cart.removeItem(id: item.id) })
+        VStack(alignment: .leading, spacing: 13) {
+            HStack {
+                Text("YOUR ORDER")
+                    .font(.system(size: 10, weight: .black))
+                    .tracking(1.4)
+                    .foregroundStyle(Color.dishRed)
+                Spacer()
+                Label("Visual edits attached", systemImage: "checkmark.seal.fill")
+                    .font(.caption2.bold())
+                    .foregroundStyle(Color.dishSuccess)
             }
-        }
-        .padding(.vertical, 4)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, 16)
-    }
 
-    // MARK: - Add More / Note
-
-    private var addMoreSection: some View {
-        HStack(spacing: 12) {
-            Button { coordinator.goBack() } label: {
-                HStack(spacing: 6) {
-                    Image(systemName: "plus")
-                        .font(.caption.bold())
-                    Text("Add more items")
-                        .font(.caption.weight(.medium))
-                }
-                .foregroundStyle(Color.zomatoGreen)
-                .padding(.horizontal, 14)
-                .padding(.vertical, 10)
-                .background(
-                    RoundedRectangle(cornerRadius: 8)
-                        .stroke(Color(.systemGray4), lineWidth: 1)
+            ForEach(coordinator.cart.items) { item in
+                CartItemRow(
+                    item: item,
+                    imageAsset: coordinator.restaurant.product(id: item.productID)?.assembledAssetName,
+                    onRemove: { coordinator.cart.removeItem(id: item.id) }
                 )
             }
-
-            Spacer()
         }
-        .padding(.horizontal, 16)
+        .padding(16)
+        .dishCard(radius: 22)
     }
 
-    // MARK: - Bill Details
+    private var addMoreSection: some View {
+        Button { coordinator.goBack() } label: {
+            HStack {
+                Image(systemName: "plus.circle.fill")
+                    .foregroundStyle(Color.dishRed)
+                Text("Add another dish")
+                    .font(.subheadline.bold())
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.bold())
+                    .foregroundStyle(Color.dishMuted)
+            }
+            .foregroundStyle(.white)
+            .padding(15)
+            .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .buttonStyle(.plain)
+    }
 
     private var billDetailsSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Bill Details")
-                .font(.subheadline.bold())
+            Text("BILL DETAILS")
+                .font(.system(size: 10, weight: .black))
+                .tracking(1.4)
+                .foregroundStyle(Color.dishRed)
 
             let totals = coordinator.cart.totals
-
             BillRow(label: "Item total", amount: totals.itemTotal)
             BillRow(label: "Delivery fee", amount: totals.deliveryFee)
             BillRow(label: "Platform fee", amount: totals.platformFee)
             BillRow(label: "Taxes", amount: totals.taxes)
 
-            Divider()
+            Rectangle().fill(Color.white.opacity(0.08)).frame(height: 0.7)
 
             HStack {
                 Text("To Pay")
-                    .font(.subheadline.bold())
+                    .font(.headline)
                 Spacer()
                 Text(INR.format(totals.grandTotal))
-                    .font(.subheadline.bold())
+                    .font(.title3.monospacedDigit().bold())
+                    .foregroundStyle(Color.dishWarm)
             }
         }
-        .padding(16)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, 16)
+        .padding(17)
+        .dishCard(radius: 22)
     }
-
-    // MARK: - Delivery Info
 
     private var deliverySection: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "clock")
-                .font(.body)
-                .foregroundStyle(.secondary)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Delivery in \(coordinator.restaurant.deliveryEstimate)")
-                    .font(.subheadline.weight(.medium))
-                Text("Standard delivery")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            Spacer()
+        VStack(alignment: .leading, spacing: 12) {
+            Label("Delivering to", systemImage: "house.fill")
+                .font(.caption.bold())
+                .foregroundStyle(Color.dishRed)
+            Text("Home")
+                .font(.headline)
+            Text("12, Demo Street · Bengaluru")
+                .font(.caption)
+                .foregroundStyle(Color.dishMuted)
+            Label("Leave at the door · Ring once", systemImage: "bell.badge.fill")
+                .font(.caption)
+                .foregroundStyle(Color.dishMuted)
         }
-        .padding(16)
-        .background(Color(.systemBackground), in: RoundedRectangle(cornerRadius: 12))
-        .padding(.horizontal, 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(17)
+        .dishCard(radius: 22)
     }
-
-    // MARK: - Cancellation
 
     private var cancellationNote: some View {
-        VStack(alignment: .leading, spacing: 4) {
+        VStack(alignment: .leading, spacing: 5) {
             Text("CANCELLATION POLICY")
-                .font(.caption2.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .tracking(0.5)
-            Text("A 100% cancellation charge will apply. This helps us compensate the restaurant partner for food preparation.")
+                .font(.system(size: 9, weight: .black))
+                .tracking(1.1)
+                .foregroundStyle(Color.dishMuted)
+            Text("A cancellation charge may apply after preparation begins. This prototype does not process a real payment or restaurant order.")
                 .font(.caption)
-                .foregroundStyle(.tertiary)
+                .foregroundStyle(Color.dishMuted)
         }
-        .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 4)
     }
 
-    // MARK: - Place Order CTA
-
     private var placeOrderButton: some View {
-        Button {
-            _ = coordinator.placeDemoOrder()
-        } label: {
-            Text("Place Order")
-                .font(.subheadline.bold())
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity)
-                .padding(.vertical, 16)
-                .background(Color.zomatoGreen, in: RoundedRectangle(cornerRadius: 14))
+        HStack(spacing: 14) {
+            VStack(alignment: .leading, spacing: 1) {
+                Text("TOTAL")
+                    .font(.system(size: 9, weight: .black))
+                    .tracking(1)
+                    .foregroundStyle(Color.dishMuted)
+                Text(INR.format(coordinator.cart.totals.grandTotal))
+                    .font(.title3.monospacedDigit().bold())
+            }
+
+            Button {
+                _ = coordinator.placeDemoOrder()
+            } label: {
+                HStack {
+                    Text("Place demo order")
+                    Image(systemName: "arrow.right")
+                }
+            }
+            .buttonStyle(DishPrimaryButtonStyle())
+            .disabled(coordinator.cart.isEmpty)
+            .opacity(coordinator.cart.isEmpty ? 0.45 : 1)
+            .accessibilityIdentifier("checkout.placeOrder")
         }
         .padding(.horizontal, 16)
+        .padding(.top, 11)
         .padding(.bottom, 8)
-        .accessibilityIdentifier("checkout.placeOrder")
+        .background(.ultraThinMaterial)
     }
 }
 
-// MARK: - Cart Item Row
-
 private struct CartItemRow: View {
     let item: CartItem
+    let imageAsset: String?
     let onRemove: () -> Void
 
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
-            Image(systemName: "leaf.circle.fill")
-                .font(.caption)
-                .foregroundStyle(.green)
-                .padding(.top, 4)
+            if let imageAsset {
+                BundledImage.image(named: imageAsset)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: 76, height: 76)
+                    .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+            }
 
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 5) {
                 Text(item.productName)
-                    .font(.subheadline.weight(.medium))
+                    .font(.subheadline.bold())
 
-                if !item.modifiers.isEmpty {
-                    Text(item.modifiers.map(\.label).joined(separator: ", "))
+                if item.modifiers.isEmpty {
+                    Text("Restaurant recipe")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(Color.dishMuted)
+                } else {
+                    ForEach(item.modifiers, id: \.ingredientID) { modifier in
+                        Label(
+                            modifier.label,
+                            systemImage: modifier.kind == .removal ? "minus.circle.fill" : "plus.circle.fill"
+                        )
+                        .font(.caption)
+                        .foregroundStyle(modifier.kind == .removal ? Color.dishRed : Color.dishSuccess)
+                    }
+                }
+
+                if !item.customerNote.isEmpty {
+                    Text("“\(item.customerNote)”")
+                        .font(.caption2.italic())
+                        .foregroundStyle(Color.dishWarm)
+                        .lineLimit(2)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 4)
 
-            VStack(alignment: .trailing, spacing: 6) {
-                quantityStepper
+            VStack(alignment: .trailing, spacing: 8) {
                 Text(INR.format(item.totalPricePaise))
-                    .font(.caption.weight(.medium))
+                    .font(.caption.monospacedDigit().bold())
+                Button(action: onRemove) {
+                    Image(systemName: "minus")
+                        .font(.caption.bold())
+                        .frame(width: 30, height: 28)
+                        .background(Color.dishRed.opacity(0.14), in: RoundedRectangle(cornerRadius: 9))
+                }
+                .foregroundStyle(Color.dishRed)
+                .accessibilityLabel("Remove \(item.productName)")
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 12)
-    }
-
-    private var quantityStepper: some View {
-        HStack(spacing: 12) {
-            Button(action: onRemove) {
-                Image(systemName: "minus")
-                    .font(.caption2.bold())
-                    .foregroundStyle(Color.zomatoGreen)
-            }
-            Text("1")
-                .font(.caption.bold())
-                .foregroundStyle(Color.zomatoGreen)
-            Button(action: {}) {
-                Image(systemName: "plus")
-                    .font(.caption2.bold())
-                    .foregroundStyle(Color.zomatoGreen)
-            }
-        }
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(Color.zomatoGreen, lineWidth: 1.5)
-        )
+        .padding(11)
+        .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
-
-// MARK: - Bill Row
 
 private struct BillRow: View {
     let label: String
@@ -246,10 +288,10 @@ private struct BillRow: View {
         HStack {
             Text(label)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.dishMuted)
             Spacer()
             Text(INR.format(amount))
-                .font(.caption)
+                .font(.caption.monospacedDigit())
         }
     }
 }

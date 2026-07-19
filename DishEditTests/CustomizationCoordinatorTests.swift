@@ -19,6 +19,17 @@ struct CustomizationCoordinatorTests {
         #expect(c.revision == 0)
     }
 
+    @Test func initializesFromExistingAppDraft() {
+        let product = DemoRestaurantCatalog.copperAndCrumb.product(id: "burger")!
+        var draft = CustomizationDraft(product: product)
+        _ = draft.remove(ingredientID: "burger.tomato")
+
+        let c = CustomizationCoordinator(product: product, draft: draft)
+
+        #expect(!c.isIngredientPresent(id: "burger.tomato"))
+        #expect(c.revision == draft.revision)
+    }
+
     @Test func expandTransitionsToExpanded() {
         var c = coordinator
         c.expand()

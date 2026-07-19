@@ -12,6 +12,13 @@ import Testing
 
 struct DishEditTests {
 
+    @Test func dynamicFrameDimensionsRejectInvalidGeometry() {
+        #expect(safeFrameDimension(120) == 120)
+        #expect(safeFrameDimension(-4) == 0)
+        #expect(safeFrameDimension(.nan) == 0)
+        #expect(safeFrameDimension(.infinity) == 0)
+    }
+
     @Test func catalogContainsThreeCuratedDishes() {
         let catalog = DishCatalog.preview
 

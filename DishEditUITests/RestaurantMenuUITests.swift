@@ -10,11 +10,17 @@ final class RestaurantMenuUITests: XCTestCase {
         app.launch()
     }
 
+    override func tearDown() {
+        app?.terminate()
+        app = nil
+        super.tearDown()
+    }
+
     func testMenuShowsThreeProducts() {
-        let burgerCard = app.scrollViews.otherElements["menu.product.burger"]
+        let burgerCard = app.scrollViews.staticTexts["menu.product.burger"]
         XCTAssertTrue(burgerCard.waitForExistence(timeout: 8))
-        XCTAssertTrue(app.scrollViews.otherElements["menu.product.sub"].exists)
-        XCTAssertTrue(app.scrollViews.otherElements["menu.product.taco-wrap"].exists)
+        XCTAssertTrue(app.scrollViews.staticTexts["menu.product.sub"].exists)
+        XCTAssertTrue(app.scrollViews.staticTexts["menu.product.taco-wrap"].exists)
     }
 
     func testAddBurgerIncreasesCartCount() {
@@ -31,5 +37,39 @@ final class RestaurantMenuUITests: XCTestCase {
         editButton.tap()
         let marker = app.staticTexts["customization.burger"]
         XCTAssertTrue(marker.waitForExistence(timeout: 5))
+    }
+
+    func testSettingsButtonNavigates() {
+        let settingsButton = app.buttons["Open preview settings"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 8))
+        settingsButton.tap()
+        XCTAssertTrue(app.navigationBars["Generation"].waitForExistence(timeout: 5))
+    }
+
+    func testStageSafeSettingPersistsAfterClosingAndReopening() {
+        let settingsButton = app.buttons["Open preview settings"]
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 8))
+        settingsButton.tap()
+
+        let stageSafeToggle = app.switches["Stage Safe Mode"]
+        XCTAssertTrue(stageSafeToggle.waitForExistence(timeout: 5))
+        if (stageSafeToggle.value as? String) != "1" {
+            stageSafeToggle.coordinate(withNormalizedOffset: CGVector(dx: 0.92, dy: 0.5)).tap()
+        }
+        XCTAssertTrue(waitForSwitch(stageSafeToggle, value: "1"))
+        app.navigationBars.buttons["Done"].tap()
+
+        XCTAssertTrue(settingsButton.waitForExistence(timeout: 5))
+        settingsButton.tap()
+        XCTAssertTrue(stageSafeToggle.waitForExistence(timeout: 5))
+        XCTAssertTrue(waitForSwitch(stageSafeToggle, value: "1"))
+    }
+
+    private func waitForSwitch(_ element: XCUIElement, value: String) -> Bool {
+        let expectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", value),
+            object: element
+        )
+        return XCTWaiter.wait(for: [expectation], timeout: 3) == .completed
     }
 }

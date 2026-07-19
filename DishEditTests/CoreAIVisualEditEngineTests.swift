@@ -2,6 +2,7 @@ import Testing
 @testable import DishEdit
 
 @Suite("Core AI Visual Edit Engine Tests")
+@MainActor
 struct CoreAIVisualEditEngineTests {
 
     @Test func initialAvailabilityIsUnverified() async {

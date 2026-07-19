@@ -246,7 +246,7 @@ private struct DishStage: View {
                         .resizable()
                         .scaledToFit()
                         .mask(alignment: .leading) {
-                            Rectangle().frame(width: geometry.size.width * fraction)
+                            Rectangle().frame(width: safeFrameDimension(geometry.size.width * fraction))
                         }
                         .overlay(alignment: .leading) {
                             Rectangle()

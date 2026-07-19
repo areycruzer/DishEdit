@@ -123,6 +123,32 @@ struct AppCoordinatorTests {
         #expect(coordinator.hasDirtyDraft(for: "burger"))
     }
 
+    @Test func editorCanReplaceDraftBeforeNavigatingToInstructions() {
+        let coordinator = AppCoordinator()
+        coordinator.beginVisualCustomization(productID: "burger")
+        let burger = coordinator.restaurant.product(id: "burger")!
+        var editorDraft = CustomizationDraft(product: burger)
+        _ = editorDraft.remove(ingredientID: "burger.tomato")
+        _ = editorDraft.add(ingredientID: "burger.cheddar")
+
+        coordinator.replaceDraft(editorDraft, for: "burger")
+        coordinator.confirmCustomization(productID: "burger")
+
+        let persisted = coordinator.draft(for: "burger")!
+        #expect(!persisted.presentIngredientIDs.contains("burger.tomato"))
+        #expect(persisted.presentIngredientIDs.contains("burger.cheddar"))
+        #expect(coordinator.route == .instructions(productID: "burger"))
+    }
+
+    @Test func demoProductLaunchArgumentOpensRequestedEditor() {
+        let coordinator = AppCoordinator(
+            launchArguments: ["DishEdit", "-DishEditDemoProduct", "burger"]
+        )
+
+        #expect(coordinator.route == .customize(productID: "burger"))
+        #expect(coordinator.draft(for: "burger") != nil)
+    }
+
     @Test func discardDraftClearsState() {
         let coordinator = AppCoordinator()
         coordinator.beginVisualCustomization(productID: "burger")

@@ -2,6 +2,7 @@ import Testing
 @testable import DishEdit
 
 @Suite("Image Playground Bridge Tests")
+@MainActor
 struct ImagePlaygroundBridgeTests {
 
     @Test func bridgeReportsAvailability() async {

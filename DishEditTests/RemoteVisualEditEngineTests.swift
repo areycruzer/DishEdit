@@ -1,7 +1,9 @@
+import Foundation
 import Testing
 @testable import DishEdit
 
 @Suite("Remote Visual Edit Engine Tests")
+@MainActor
 struct RemoteVisualEditEngineTests {
 
     @Test func engineModeIsRemote() async {

@@ -48,6 +48,26 @@ nonisolated struct ProductDefinition: Identifiable, Codable, Equatable, Sendable
     var addableIngredients: [IngredientDefinition] {
         ingredients.filter(\.canAdd)
     }
+
+    func visualPreviewAsset(
+        removedIngredientIDs: Set<String>,
+        addedIngredientIDs: Set<String>
+    ) -> String? {
+        switch (id, removedIngredientIDs, addedIngredientIDs) {
+        case ("burger", ["burger.tomato"], []):
+            "preview_burger_no_tomato"
+        case ("burger", [], ["burger.cheddar"]):
+            "preview_burger_cheddar"
+        case ("burger", ["burger.tomato"], ["burger.cheddar"]):
+            "preview_burger_no_tomato_cheddar"
+        case ("sub", ["sub.onion"], ["sub.jalapenos"]):
+            "preview_sub_no_onion_jalapenos"
+        case ("taco-wrap", ["taco-wrap.onion"], ["taco-wrap.guacamole"]):
+            "preview_taco_no_onion_guacamole"
+        default:
+            nil
+        }
+    }
 }
 
 nonisolated struct IngredientDefinition: Identifiable, Codable, Equatable, Sendable {

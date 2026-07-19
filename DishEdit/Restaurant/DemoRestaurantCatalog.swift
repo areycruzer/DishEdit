@@ -24,7 +24,7 @@ private extension DemoRestaurantCatalog {
         basePricePaise: 24_900,
         dietaryMarker: "Non-veg",
         rating: 4.5,
-        assembledAssetName: "burger_base",
+        assembledAssetName: "menu_burger_hero",
         presentation: .explodedLayers,
         ingredients: [
             IngredientDefinition(
@@ -159,7 +159,7 @@ private extension DemoRestaurantCatalog {
         basePricePaise: 22_900,
         dietaryMarker: "Veg",
         rating: 4.2,
-        assembledAssetName: "sub_base",
+        assembledAssetName: "menu_sub_hero",
         presentation: .sandwichCounter,
         ingredients: [
             IngredientDefinition(
@@ -320,7 +320,7 @@ private extension DemoRestaurantCatalog {
         basePricePaise: 19_900,
         dietaryMarker: "Veg",
         rating: 4.4,
-        assembledAssetName: "taco_base",
+        assembledAssetName: "menu_taco_hero",
         presentation: .tacoFan,
         ingredients: [
             IngredientDefinition(

@@ -1,264 +1,352 @@
 import SwiftUI
 
-// MARK: - Restaurant Menu View
-
 struct RestaurantMenuView: View {
     @Bindable var coordinator: AppCoordinator
 
     var body: some View {
         ZStack(alignment: .bottom) {
+            DishEditBackdrop()
+
             ScrollView {
-                VStack(spacing: 0) {
-                    restaurantHeaderSection
-                    menuSection
-                        .padding(.bottom, coordinator.cart.isEmpty ? 24 : 80)
-                }
-            }
-            .background(Color(.systemGroupedBackground))
+                LazyVStack(spacing: 18) {
+                    brandBar
+                    restaurantHero
+                    visualMenuIntroduction
 
-            if !coordinator.cart.isEmpty {
-                cartFloatingBar
-            }
-        }
-    }
-
-    // MARK: - Restaurant Header
-
-    private var restaurantHeaderSection: some View {
-        VStack(spacing: 0) {
-            ZStack(alignment: .bottomLeading) {
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [Color(.systemGray5), Color(.systemGray6)],
-                            startPoint: .top,
-                            endPoint: .bottom
+                    ForEach(coordinator.restaurant.products) { product in
+                        ProductExperienceCard(
+                            product: product,
+                            onAdd: { coordinator.addDefaultProduct(productID: product.id) },
+                            onEditVisually: { coordinator.beginVisualCustomization(productID: product.id) }
                         )
-                    )
-                    .frame(height: 140)
-
-                HStack(alignment: .bottom) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(coordinator.restaurant.name)
-                            .font(.title2.bold())
-                            .foregroundStyle(.primary)
-                        Text(coordinator.restaurant.cuisine)
-                            .font(.footnote)
-                            .foregroundStyle(.secondary)
                     }
 
-                    Spacer()
-
-                    ratingBadge
+                    proofFooter
+                        .padding(.top, 4)
+                        .padding(.bottom, coordinator.cart.isEmpty ? 24 : 104)
                 }
                 .padding(.horizontal, 16)
-                .padding(.bottom, 16)
+                .padding(.top, 8)
             }
+            .scrollIndicators(.hidden)
 
-            deliveryInfoBar
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-
-            Divider()
-                .padding(.horizontal, 16)
+            if !coordinator.cart.isEmpty {
+                cartBar
+                    .transition(.move(edge: .bottom).combined(with: .opacity))
+            }
         }
-        .background(Color(.systemBackground))
+        .preferredColorScheme(.dark)
+        .animation(.spring(response: 0.42, dampingFraction: 0.86), value: coordinator.cart.itemCount)
     }
 
-    private var ratingBadge: some View {
-        HStack(spacing: 4) {
-            Image(systemName: "star.fill")
-                .font(.caption2)
-            Text(String(format: "%.1f", coordinator.restaurant.rating))
-                .font(.caption.bold())
-        }
-        .foregroundStyle(.white)
-        .padding(.horizontal, 10)
-        .padding(.vertical, 6)
-        .background(Color.zomatoGreen, in: RoundedRectangle(cornerRadius: 6))
-    }
-
-    private var deliveryInfoBar: some View {
-        HStack(spacing: 16) {
-            HStack(spacing: 4) {
-                Image(systemName: "clock")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(coordinator.restaurant.deliveryEstimate)
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+    private var brandBar: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(Color.dishRed)
+                Image(systemName: "hand.tap.fill")
+                    .font(.system(size: 18, weight: .bold))
+                    .foregroundStyle(.white)
             }
+            .frame(width: 42, height: 42)
 
-            Text("·")
-                .foregroundStyle(.secondary)
-
-            Text("Schedule for later")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            VStack(alignment: .leading, spacing: 1) {
+                Text("DishEdit")
+                    .font(.system(size: 21, weight: .bold, design: .rounded))
+                Text("A visual ordering experience")
+                    .font(.caption)
+                    .foregroundStyle(Color.dishMuted)
+            }
 
             Spacer()
-        }
-    }
 
-    // MARK: - Menu Section
-
-    private var menuSection: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Menu")
-                .font(.title3.bold())
-                .padding(.horizontal, 16)
-                .padding(.top, 20)
-                .padding(.bottom, 12)
-
-            LazyVStack(spacing: 1) {
-                ForEach(coordinator.restaurant.products) { product in
-                    ProductRow(
-                        product: product,
-                        onAdd: { coordinator.addDefaultProduct(productID: product.id) },
-                        onEditVisually: { coordinator.beginVisualCustomization(productID: product.id) }
-                    )
-                }
+            Button { coordinator.showDiagnostics() } label: {
+                Image(systemName: "waveform.path.ecg.rectangle")
             }
-            .background(Color(.systemBackground))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
-            .padding(.horizontal, 16)
+            .buttonStyle(DishGlassIconButtonStyle())
+            .accessibilityLabel("Open diagnostics")
+
+            Button { coordinator.showSettings() } label: {
+                Image(systemName: "slider.horizontal.3")
+            }
+            .buttonStyle(DishGlassIconButtonStyle())
+            .accessibilityLabel("Open preview settings")
         }
     }
 
-    // MARK: - Cart Floating Bar
+    private var restaurantHero: some View {
+        ZStack(alignment: .bottomLeading) {
+            BundledImage.image(named: "menu_burger_hero")
+                .resizable()
+                .scaledToFill()
+                .frame(height: 218)
+                .clipped()
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
 
-    private var cartFloatingBar: some View {
+            LinearGradient(
+                colors: [.clear, Color.dishCanvas.opacity(0.28), Color.dishCanvas.opacity(0.98)],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+
+            VStack(alignment: .leading, spacing: 11) {
+                DishStatusPill(icon: "sparkles", text: "VISUAL MENU · iOS 27")
+
+                Text(coordinator.restaurant.name)
+                    .font(.system(size: 31, weight: .bold, design: .rounded))
+
+                Text(coordinator.restaurant.cuisine)
+                    .font(.subheadline)
+                    .foregroundStyle(Color.dishMuted)
+
+                HStack(spacing: 10) {
+                    Label(String(format: "%.1f", coordinator.restaurant.rating), systemImage: "star.fill")
+                    Label(coordinator.restaurant.deliveryEstimate, systemImage: "clock.fill")
+                    Label("₹₹", systemImage: "indianrupeesign.circle.fill")
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.white.opacity(0.82))
+            }
+            .padding(20)
+        }
+        .frame(height: 218)
+        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .overlay {
+            RoundedRectangle(cornerRadius: 28, style: .continuous)
+                .stroke(Color.white.opacity(0.12), lineWidth: 0.8)
+        }
+        .shadow(color: .black.opacity(0.38), radius: 24, y: 14)
+    }
+
+    private var visualMenuIntroduction: some View {
+        HStack(alignment: .top, spacing: 14) {
+            Image(systemName: "hand.draw.fill")
+                .font(.title2)
+                .foregroundStyle(Color.dishRed)
+                .frame(width: 42, height: 42)
+                .background(Color.dishRed.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
+
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Don’t describe it. Touch it.")
+                    .font(.headline)
+                Text("Open any dish, pull its ingredients apart, remove what you dislike, and drag in what you want.")
+                    .font(.caption)
+                    .foregroundStyle(Color.dishMuted)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(16)
+        .dishCard(radius: 20)
+    }
+
+    private var cartBar: some View {
         Button { coordinator.showCheckout() } label: {
-            HStack {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text("\(coordinator.cart.itemCount) item\(coordinator.cart.itemCount > 1 ? "s" : "") added")
-                        .font(.footnote.bold())
-                        .foregroundStyle(.white)
-                    Text(INR.format(coordinator.cart.itemTotal))
-                        .font(.caption)
-                        .foregroundStyle(.white.opacity(0.85))
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle().fill(.white.opacity(0.17))
+                    Text("\(coordinator.cart.itemCount)")
+                        .font(.caption.bold())
                 }
+                .frame(width: 38, height: 38)
+
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Your order")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.72))
+                    Text(INR.format(coordinator.cart.itemTotal))
+                        .font(.headline.monospacedDigit())
+                }
+
                 Spacer()
-                Text("View Cart")
+
+                Text("View cart")
                     .font(.subheadline.bold())
-                    .foregroundStyle(.white)
-                Image(systemName: "chevron.right")
-                    .font(.caption.bold())
-                    .foregroundStyle(.white.opacity(0.8))
+                Image(systemName: "arrow.right")
+                    .font(.subheadline.bold())
             }
-            .padding(.horizontal, 20)
-            .padding(.vertical, 14)
-            .background(Color.zomatoGreen, in: RoundedRectangle(cornerRadius: 14))
+            .foregroundStyle(.white)
+            .padding(.horizontal, 16)
+            .frame(height: 68)
+            .background(
+                LinearGradient(
+                    colors: [Color.dishRed, Color(red: 0.66, green: 0.015, blue: 0.07)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                ),
+                in: RoundedRectangle(cornerRadius: 22, style: .continuous)
+            )
+            .shadow(color: Color.dishRed.opacity(0.42), radius: 22, y: 10)
         }
+        .buttonStyle(.plain)
         .padding(.horizontal, 16)
         .padding(.bottom, 8)
         .accessibilityIdentifier("menu.cart.banner")
     }
+
+    private var proofFooter: some View {
+        HStack(spacing: 10) {
+            Image(systemName: "lock.shield.fill")
+                .foregroundStyle(Color.dishSuccess)
+            Text("Order details always come from the restaurant’s modifier catalog. Visual AI never decides what the kitchen prepares.")
+                .font(.caption2)
+                .foregroundStyle(Color.dishMuted)
+        }
+        .padding(.horizontal, 8)
+    }
 }
 
-// MARK: - Product Row (Zomato-style)
-
-private struct ProductRow: View {
+private struct ProductExperienceCard: View {
     let product: ProductDefinition
     let onAdd: () -> Void
     let onEditVisually: () -> Void
 
+    @State private var imageScale = 1.02
+
     var body: some View {
         VStack(spacing: 0) {
-            HStack(alignment: .top, spacing: 12) {
-                VStack(alignment: .leading, spacing: 6) {
-                    dietaryBadge
-                    Text(product.name)
-                        .font(.subheadline.weight(.semibold))
-                        .lineLimit(2)
-                    Text(product.subtitle)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                        .lineLimit(2)
-
-                    HStack(spacing: 8) {
-                        Text(INR.format(product.basePricePaise))
-                            .font(.subheadline.weight(.medium))
-                        ratingLabel
-                    }
-                    .padding(.top, 2)
-                }
-
-                Spacer()
-
-                productImageWithButtons
-            }
-            .padding(16)
-
-            Divider()
-                .padding(.leading, 16)
+            heroImage
+            productDetails
         }
-        .accessibilityElement(children: .contain)
-        .accessibilityIdentifier("menu.product.\(product.id)")
-    }
-
-    private var dietaryBadge: some View {
-        HStack(spacing: 4) {
-            RoundedRectangle(cornerRadius: 2)
-                .stroke(product.dietaryMarker == "Veg" ? Color.green : Color.red, lineWidth: 1.5)
-                .frame(width: 14, height: 14)
-                .overlay(
-                    Circle()
-                        .fill(product.dietaryMarker == "Veg" ? Color.green : Color.red)
-                        .frame(width: 7, height: 7)
+        .background {
+            RoundedRectangle(cornerRadius: 26, style: .continuous)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white.opacity(0.075), Color.white.opacity(0.025)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
                 )
+                .overlay {
+                    RoundedRectangle(cornerRadius: 26, style: .continuous)
+                        .stroke(Color.white.opacity(0.14), lineWidth: 0.8)
+                        .allowsHitTesting(false)
+                }
+                .allowsHitTesting(false)
+        }
+        .overlay(alignment: .bottomTrailing) {
+            editVisuallyButton
+                .frame(width: 164)
+                .padding(16)
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.7)) { imageScale = 1 }
         }
     }
 
-    private var ratingLabel: some View {
-        HStack(spacing: 3) {
-            Image(systemName: "star.fill")
-                .font(.system(size: 9))
-                .foregroundStyle(.orange)
-            Text(String(format: "%.1f", product.rating))
-                .font(.caption)
-                .foregroundStyle(.secondary)
-        }
-    }
-
-    private var productImageWithButtons: some View {
-        VStack(spacing: 0) {
+    private var heroImage: some View {
+        ZStack(alignment: .topLeading) {
             BundledImage.image(named: product.assembledAssetName)
                 .resizable()
                 .scaledToFill()
-                .frame(width: 110, height: 110)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .scaleEffect(imageScale)
+                .frame(height: 176)
+                .clipped()
+                .allowsHitTesting(false)
+                .accessibilityHidden(true)
 
-            HStack(spacing: 6) {
-                Button(action: onAdd) {
-                    Text("ADD")
-                        .font(.caption.bold())
-                        .foregroundStyle(Color.zomatoGreen)
-                        .frame(width: 52, height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.zomatoGreen.opacity(0.4), lineWidth: 1)
-                                .fill(Color.zomatoGreen.opacity(0.06))
-                        )
+            LinearGradient(
+                colors: [.clear, Color.dishCanvas.opacity(0.72)],
+                startPoint: UnitPoint(x: 0.5, y: 0.45),
+                endPoint: .bottom
+            )
+
+            HStack(spacing: 7) {
+                dietaryMarker
+                Text(String(format: "%.1f", product.rating))
+                Image(systemName: "star.fill")
+                    .font(.system(size: 9))
+            }
+            .font(.caption2.bold())
+            .padding(.horizontal, 10)
+            .padding(.vertical, 7)
+            .background(.black.opacity(0.58), in: Capsule())
+            .overlay(Capsule().stroke(.white.opacity(0.15), lineWidth: 0.7))
+            .padding(13)
+        }
+        .frame(height: 176)
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 26, topTrailingRadius: 26))
+    }
+
+    private var productDetails: some View {
+        VStack(alignment: .leading, spacing: 13) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(product.name)
+                        .font(.title3.bold())
+                        .accessibilityIdentifier("menu.product.\(product.id)")
+                    Text(product.subtitle)
+                        .font(.caption)
+                        .foregroundStyle(Color.dishMuted)
+                        .lineLimit(2)
                 }
+
+                Spacer(minLength: 12)
+
+                Text(INR.format(product.basePricePaise))
+                    .font(.headline.monospacedDigit())
+                    .foregroundStyle(Color.dishWarm)
+            }
+
+            Text(product.description)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.68))
+                .lineLimit(3)
+
+            HStack(spacing: 10) {
+                Button(action: onAdd) {
+                    Label("Quick add", systemImage: "plus")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white.opacity(0.88))
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .background(.white.opacity(0.065), in: RoundedRectangle(cornerRadius: 15))
+                        .overlay(RoundedRectangle(cornerRadius: 15).stroke(.white.opacity(0.12), lineWidth: 0.8))
+                }
+                .buttonStyle(.plain)
                 .accessibilityIdentifier("menu.add.\(product.id)")
 
-                Button(action: onEditVisually) {
-                    HStack(spacing: 3) {
-                        Image(systemName: "wand.and.stars")
-                            .font(.system(size: 8))
-                        Text("Edit")
-                            .font(.caption.bold())
-                    }
-                    .foregroundStyle(.white)
-                    .frame(height: 30)
-                    .padding(.horizontal, 8)
-                    .background(Color.zomatoGreen, in: RoundedRectangle(cornerRadius: 8))
-                }
-                .accessibilityIdentifier("menu.edit-visually.\(product.id)")
+                Color.clear
+                    .frame(maxWidth: .infinity)
+                .frame(height: 48)
+                    .accessibilityHidden(true)
             }
-            .offset(y: -14)
+        }
+        .padding(16)
+    }
+
+    private var editVisuallyButton: some View {
+        Button(action: onEditVisually) {
+            HStack(spacing: 7) {
+                Image(systemName: "wand.and.stars")
+                Text("Edit visually")
+            }
+            .font(.subheadline.bold())
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity)
+            .frame(height: 48)
+            .background(Color.dishRed, in: RoundedRectangle(cornerRadius: 15))
+            .shadow(color: Color.dishRed.opacity(0.32), radius: 13, y: 6)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("menu.edit-visually.\(product.id)")
+    }
+
+    private var dietaryMarker: some View {
+        HStack(spacing: 5) {
+            RoundedRectangle(cornerRadius: 2)
+                .stroke(product.dietaryMarker == "Veg" ? Color.dishSuccess : Color.dishRed, lineWidth: 1.4)
+                .frame(width: 12, height: 12)
+                .overlay {
+                    Circle()
+                        .fill(product.dietaryMarker == "Veg" ? Color.dishSuccess : Color.dishRed)
+                        .frame(width: 6, height: 6)
+                }
+            Text(product.dietaryMarker.uppercased())
         }
     }
 }
 
+#Preview {
+    RestaurantMenuView(coordinator: AppCoordinator())
+}

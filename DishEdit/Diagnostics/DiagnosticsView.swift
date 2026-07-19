@@ -5,7 +5,9 @@ import SwiftUI
 struct DiagnosticsView: View {
     @Bindable var coordinator: AppCoordinator
     @State private var availability: [GenerationEngineMode: EngineAvailability] = [:]
-    @State private var forcedFailures: Set<GenerationEngineMode> = []
+    @State private var forceCoreAIFailure = false
+    @State private var forceRemoteFailure = false
+    @State private var forceImagePlaygroundFailure = false
     @State private var showRunResults = false
     @State private var runCount = 0
     @State private var runSuccesses = 0
@@ -119,16 +121,7 @@ struct DiagnosticsView: View {
     private var forcedFailureSection: some View {
         Section {
             ForEach([GenerationEngineMode.coreAI, .remote, .imagePlayground], id: \.self) { mode in
-                Toggle("Force \(mode.rawValue) failure", isOn: Binding(
-                    get: { forcedFailures.contains(mode) },
-                    set: { enabled in
-                        if enabled {
-                            forcedFailures.insert(mode)
-                        } else {
-                            forcedFailures.remove(mode)
-                        }
-                    }
-                ))
+                Toggle("Force \(mode.rawValue) failure", isOn: forcedFailureBinding(for: mode))
                 .accessibilityIdentifier("diagnostics.forceFailure.\(mode.rawValue)")
             }
         } header: {
@@ -172,6 +165,27 @@ struct DiagnosticsView: View {
             .remote: .unavailable,
             .imagePlayground: FeatureAvailability.isImagePlaygroundAvailable ? .available : .unavailable
         ]
+    }
+
+    private func forcedFailureBinding(for mode: GenerationEngineMode) -> Binding<Bool> {
+        switch mode {
+        case .coreAI:
+            return $forceCoreAIFailure
+        case .remote:
+            return $forceRemoteFailure
+        case .imagePlayground:
+            return $forceImagePlaygroundFailure
+        case .reviewed:
+            return .constant(false)
+        }
+    }
+
+    private var forcedFailures: Set<GenerationEngineMode> {
+        var modes: Set<GenerationEngineMode> = []
+        if forceCoreAIFailure { modes.insert(.coreAI) }
+        if forceRemoteFailure { modes.insert(.remote) }
+        if forceImagePlaygroundFailure { modes.insert(.imagePlayground) }
+        return modes
     }
 
     private func runReliabilityTest() async {

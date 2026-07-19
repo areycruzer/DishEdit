@@ -74,6 +74,28 @@ struct IngredientLayoutTests {
         #expect(tortilla.center.y > 0.7, "Tortilla should be at bottom")
     }
 
+    @Test func counterAndWrapLabelsStaggerAdjacentFillings() {
+        for product in [sub, taco] {
+            let transforms = IngredientLayout.expanded(for: product)
+            let fillings = product.ingredients.filter { $0.role != .base }
+
+            for pairStart in 0..<(fillings.count - 1) {
+                let first = transforms[fillings[pairStart].id]!
+                let second = transforms[fillings[pairStart + 1].id]!
+
+                // Only compare neighbours in the same visual row. Long food names
+                // need alternating callout heights so their capsules cannot collide.
+                guard abs(first.center.y - second.center.y) < 0.01 else { continue }
+                let firstLabelY = first.center.y + first.labelOffset.y
+                let secondLabelY = second.center.y + second.labelOffset.y
+                #expect(
+                    abs(firstLabelY - secondLabelY) >= 0.14,
+                    "Adjacent labels overlap for \(fillings[pairStart].id) and \(fillings[pairStart + 1].id)"
+                )
+            }
+        }
+    }
+
     // MARK: - Reduce Motion
 
     @Test func reduceMotionIsReadableList() {

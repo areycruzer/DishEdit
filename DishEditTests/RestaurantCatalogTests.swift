@@ -122,4 +122,25 @@ struct RestaurantCatalogTests {
             #expect(defaultIDs == expectedIDs, "Default IDs mismatch in \(product.id)")
         }
     }
+
+    @Test func curatedHeroTransitionsResolveToMatchedPhotographs() {
+        let restaurant = DemoRestaurantCatalog.copperAndCrumb
+        let burger = restaurant.product(id: "burger")!
+        #expect(burger.visualPreviewAsset(
+            removedIngredientIDs: ["burger.tomato"],
+            addedIngredientIDs: ["burger.cheddar"]
+        ) == "preview_burger_no_tomato_cheddar")
+
+        let sub = restaurant.product(id: "sub")!
+        #expect(sub.visualPreviewAsset(
+            removedIngredientIDs: ["sub.onion"],
+            addedIngredientIDs: ["sub.jalapenos"]
+        ) == "preview_sub_no_onion_jalapenos")
+
+        let taco = restaurant.product(id: "taco-wrap")!
+        #expect(taco.visualPreviewAsset(
+            removedIngredientIDs: ["taco-wrap.onion"],
+            addedIngredientIDs: ["taco-wrap.guacamole"]
+        ) == "preview_taco_no_onion_guacamole")
+    }
 }

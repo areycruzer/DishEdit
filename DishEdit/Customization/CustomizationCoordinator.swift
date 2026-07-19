@@ -22,9 +22,9 @@ final class CustomizationCoordinator {
 
     private let previewEngine: ReviewedPreviewEngine
 
-    init(product: ProductDefinition) {
+    init(product: ProductDefinition, draft: CustomizationDraft? = nil) {
         self.product = product
-        self.draft = CustomizationDraft(product: product)
+        self.draft = draft ?? CustomizationDraft(product: product)
         self.previewEngine = ReviewedPreviewEngine()
         self.previewAssetName = product.assembledAssetName
     }
