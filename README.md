@@ -138,13 +138,11 @@ The project has no third-party runtime packages, server, paid image API, runtime
 
 The project includes domain tests and UI coverage for navigation, visual removal/addition, undo/redo/reset, kitchen instructions, cart flow, and showcase layout. The most recent focused visual-editor suite completed **10/10** serial UI tests on the iPhone 17 Pro iOS 27 simulator.
 
-For broader historical validation and device-gate details, see [TEST_REPORT.md](TEST_REPORT.md) and [PERFORMANCE_RESULTS.md](PERFORMANCE_RESULTS.md).
+The latest simulator build succeeds with Xcode 27 beta 3. Device-specific behaviour such as haptic feel and motion tuning still needs validation on physical hardware.
 
 ## Current limitations
 
 DishEdit is a demonstrative local experience. The restaurant, availability, payment, delivery, and order submission flows are not connected to production systems. Prepared food may differ from its visual preview, and restaurants cannot guarantee allergen-free preparation. Live neural image generation is not claimed in this build; availability of any experimental engine depends on the selected configuration and supported device.
-
-Read [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) before presenting device-level capabilities.
 
 ## Roadmap
 
@@ -155,8 +153,6 @@ Read [KNOWN_LIMITATIONS.md](KNOWN_LIMITATIONS.md) before presenting device-level
 
 ## Documentation
 
-- [Implementation status](IMPLEMENTATION_STATUS.md)
-- [Known limitations](KNOWN_LIMITATIONS.md)
-- [Test report](TEST_REPORT.md)
-- [Performance results](PERFORMANCE_RESULTS.md)
 - [Asset sources](ASSET_SOURCES.md)
+- [Asset checksums](ASSET_CHECKSUMS.md)
+- [Model licences](MODEL_LICENSES.md)
