@@ -36,7 +36,7 @@ struct InstructionReviewView: View {
 
             commitBar
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .task { await generateProposal() }
         .sheet(isPresented: $showAllergySheet) {
             AllergyAcknowledgementSheet(
@@ -66,18 +66,18 @@ struct InstructionReviewView: View {
             .accessibilityLabel("Back")
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("STEP 2 OF 3")
+                Text("CUSTOMISATION")
                     .font(.system(size: 9, weight: .black))
                     .tracking(1.2)
                     .foregroundStyle(Color.dishRed)
-                Text("Confirm the kitchen brief")
+                Text("Cooking instructions")
                     .font(.headline)
             }
 
             Spacer()
 
             Image(systemName: "text.document.fill")
-                .foregroundStyle(Color.dishWarm)
+                .foregroundStyle(Color.sushiRed)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
@@ -97,10 +97,10 @@ struct InstructionReviewView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 5) {
-                    DishStatusPill(icon: "checkmark", text: "VISUAL EDIT SAVED", tint: .dishSuccess)
+                    DishStatusPill(icon: "checkmark", text: "Customisation saved", tint: .dishSuccess)
                     Text(product.name)
                         .font(.title3.bold())
-                    Text("Every visual change becomes a structured restaurant instruction.")
+                    Text("Review what the restaurant will receive with your order.")
                         .font(.caption)
                         .foregroundStyle(Color.dishMuted)
                         .fixedSize(horizontal: false, vertical: true)
@@ -116,11 +116,11 @@ struct InstructionReviewView: View {
         VStack(alignment: .leading, spacing: 13) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("KITCHEN INSTRUCTIONS")
+                    Text("YOUR CHANGES")
                         .font(.system(size: 10, weight: .black))
                         .tracking(1.4)
                         .foregroundStyle(Color.dishRed)
-                    Text("Restaurant-readable, not AI guesswork")
+                    Text("Based on your selected ingredients")
                         .font(.caption)
                         .foregroundStyle(Color.dishMuted)
                 }
@@ -139,8 +139,8 @@ struct InstructionReviewView: View {
                 }
             } else if isDrafting {
                 HStack(spacing: 10) {
-                    ProgressView().tint(.white)
-                    Text("Turning your visual edits into a kitchen brief…")
+                    ProgressView().tint(Color.sushiRed)
+                    Text("Preparing your instructions…")
                         .font(.subheadline)
                         .foregroundStyle(Color.dishMuted)
                 }
@@ -167,18 +167,18 @@ struct InstructionReviewView: View {
         VStack(alignment: .leading, spacing: 11) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("TELL THE KITCHEN NATURALLY")
+                    Text("ADD A COOKING REQUEST")
                         .font(.system(size: 10, weight: .black))
                         .tracking(1.2)
                         .foregroundStyle(Color.dishRed)
-                    Text("For preferences the visual editor cannot express")
+                    Text("Optional note for the restaurant")
                         .font(.caption)
                         .foregroundStyle(Color.dishMuted)
                 }
                 Spacer()
-                Label("Apple Intelligence", systemImage: "apple.intelligence")
-                    .font(.system(size: 9, weight: .bold))
-                    .foregroundStyle(Color.dishWarm)
+                Text("Optional")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(Color.sushiGrey)
             }
 
             TextField(
@@ -195,10 +195,10 @@ struct InstructionReviewView: View {
             .padding(.horizontal, 16)
             .padding(.vertical, 14)
             .frame(maxWidth: .infinity, minHeight: 112, alignment: .topLeading)
-            .background(Color.black.opacity(0.3), in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+            .background(Color.sushiCanvas, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
             .overlay {
-                RoundedRectangle(cornerRadius: 17, style: .continuous)
-                    .stroke(Color.white.opacity(0.09), lineWidth: 0.8)
+                RoundedRectangle(cornerRadius: 14, style: .continuous)
+                    .stroke(Color.sushiDivider, lineWidth: 1)
                     .allowsHitTesting(false)
             }
             .focused($isCustomerNoteFocused)
@@ -207,7 +207,7 @@ struct InstructionReviewView: View {
             .accessibilityLabel("Kitchen note")
             .accessibilityIdentifier("customerNote")
 
-            Label("Natural language is added as a note; ingredient IDs still come from the restaurant catalog.", systemImage: "lock.shield.fill")
+            Label("This note is sent with your selected customisations.", systemImage: "text.bubble.fill")
                 .font(.system(size: 9))
                 .foregroundStyle(Color.dishMuted)
         }
@@ -225,7 +225,7 @@ struct InstructionReviewView: View {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Allergen confirmation")
                         .font(.subheadline.bold())
-                        .foregroundStyle(.white)
+                        .foregroundStyle(Color.sushiCoal)
                     Text("The restaurant cannot guarantee an allergen-free preparation. Contact the restaurant if you have a severe allergy.")
                         .font(.caption)
                         .foregroundStyle(Color.dishMuted)
@@ -258,8 +258,8 @@ struct InstructionReviewView: View {
 
     private var intelligenceDisclosure: some View {
         Label(
-            proposal?.isDeterministic == false ? "Drafted on device and validated against the catalog" : "Catalog fallback active — no network needed",
-            systemImage: proposal?.isDeterministic == false ? "apple.intelligence" : "checkmark.shield.fill"
+            "Your ingredient selections remain unchanged when this note is added.",
+            systemImage: "checkmark.shield.fill"
         )
         .font(.caption)
         .foregroundStyle(Color.dishMuted)
@@ -274,15 +274,16 @@ struct InstructionReviewView: View {
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 1) {
-                        Text("ADD TO CART")
+                        Text("ADD ITEM")
                             .font(.system(size: 9, weight: .black))
                             .tracking(1)
-                        Text("Instructions attached")
+                        Text("Customisations included")
                             .font(.caption.bold())
                     }
                     Spacer()
                     Image(systemName: "arrow.right")
                 }
+                .padding(.horizontal, 16)
             }
             .buttonStyle(DishPrimaryButtonStyle())
             .disabled(!canCommit)
@@ -291,7 +292,8 @@ struct InstructionReviewView: View {
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
+        .background(Color.white)
+        .overlay(alignment: .top) { Rectangle().fill(Color.sushiDivider).frame(height: 1) }
     }
 
     private var canCommit: Bool {
@@ -351,7 +353,8 @@ private struct InstructionRow: View {
                 .foregroundStyle(Color.dishSuccess)
         }
         .padding(12)
-        .background(Color.white.opacity(0.045), in: RoundedRectangle(cornerRadius: 15, style: .continuous))
+        .background(Color.sushiCanvas, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.sushiDivider, lineWidth: 1))
     }
 
     private var iconName: String {
@@ -410,6 +413,6 @@ struct AllergyAcknowledgementSheet: View {
             }
             .padding(24)
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 }
