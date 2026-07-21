@@ -69,11 +69,16 @@ final class VisualEditorUITests: XCTestCase {
         for productID in ["sub", "taco-wrap"] {
             launchExpandedEditor(productID: productID)
 
+            guard let ingredientIDs = showcaseAddOns[productID] else {
+                XCTFail("Missing showcase fixture for \(productID)")
+                continue
+            }
+
             let window = app.windows.firstMatch
             XCTAssertTrue(window.waitForExistence(timeout: 8))
             let windowFrame = window.frame
 
-            for ingredientID in showcaseAddOns[productID, default: []] {
+            for ingredientID in ingredientIDs {
                 let control = app.descendants(matching: .any)["tray.\(ingredientID)"]
                 XCTAssertTrue(control.waitForExistence(timeout: 5), "Missing tray.\(ingredientID)")
 
@@ -118,8 +123,12 @@ final class VisualEditorUITests: XCTestCase {
         XCTAssertTrue(confirmButton.waitForExistence(timeout: 5))
         confirmButton.tap()
 
-        let confirmOrderButton = app.buttons["Confirm Order"]
-        XCTAssertTrue(confirmOrderButton.waitForExistence(timeout: 5))
+        let previewContinueButton = app.buttons["reassembly.confirm"]
+        XCTAssertTrue(previewContinueButton.waitForExistence(timeout: 8))
+        previewContinueButton.tap()
+
+        let commitButton = app.buttons["commitButton"]
+        XCTAssertTrue(commitButton.waitForExistence(timeout: 5))
     }
 
     func testAddIngredientViaTray() {

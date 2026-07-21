@@ -11,27 +11,17 @@ struct ReassemblyOverlay: View {
     @State private var progress = 0.0
     @State private var phaseIndex = 0
     @State private var isReady = false
-    @State private var scanTravel = false
-    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let phases = [
-        "Reading your edits",
-        "Rebuilding selected regions",
-        "Preserving recipe truth",
+        "Applying your choices",
+        "Updating the dish photo",
+        "Checking your selections",
         "Preview ready"
     ]
 
     var body: some View {
         ZStack {
-            Color.black.opacity(0.97).ignoresSafeArea()
-
-            RadialGradient(
-                colors: [Color.dishRed.opacity(0.22), .clear],
-                center: .center,
-                startRadius: 20,
-                endRadius: 330
-            )
-            .ignoresSafeArea()
+            Color.sushiCanvas.ignoresSafeArea()
 
             VStack(spacing: 20) {
                 processingHeader
@@ -45,68 +35,75 @@ struct ReassemblyOverlay: View {
             .padding(.top, 22)
             .padding(.bottom, 14)
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .task { await runReconstruction() }
     }
 
     private var processingHeader: some View {
-        VStack(spacing: 7) {
-            DishStatusPill(
-                icon: isReady ? "checkmark.seal.fill" : "cpu.fill",
-                text: isReady ? "PREVIEW COMPLETE" : "ON-DEVICE VISUAL REBUILD",
-                tint: isReady ? .dishSuccess : .dishRed
-            )
+        VStack(spacing: 6) {
+            Image(systemName: isReady ? "checkmark.circle.fill" : "photo.badge.arrow.down")
+                .font(.system(size: 30, weight: .semibold))
+                .foregroundStyle(isReady ? Color.dishSuccess : Color.sushiRed)
 
-            Text(isReady ? "Your dish, rebuilt" : "Making the edit visible")
-                .font(.system(size: 27, weight: .bold, design: .rounded))
+            Text(isReady ? "Your preview is ready" : "Preparing your preview")
+                .font(.system(size: 27, weight: .bold))
+                .foregroundStyle(Color.sushiCoal)
 
-            Text("Catalog choices stay exact while the photograph catches up.")
-                .font(.caption)
-                .foregroundStyle(Color.dishMuted)
+            Text(isReady
+                 ? "Your selected customisations are shown in the dish photo."
+                 : "Your selected customisations are being added to the dish photo.")
+                .font(.subheadline)
+                .foregroundStyle(Color.sushiGrey)
                 .multilineTextAlignment(.center)
         }
     }
 
     private var previewStage: some View {
         ZStack {
-            RoundedRectangle(cornerRadius: 30, style: .continuous)
-                .fill(Color.dishSurface)
+            RoundedRectangle(cornerRadius: 22, style: .continuous)
+                .fill(Color.white)
                 .overlay(
-                    RoundedRectangle(cornerRadius: 30, style: .continuous)
-                        .stroke(Color.white.opacity(0.09), lineWidth: 0.8)
+                    RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        .stroke(Color.sushiDivider, lineWidth: 1)
                 )
-
-            Circle()
-                .fill(Color.dishRed.opacity(isReady ? 0.08 : 0.18))
-                .frame(width: 250, height: 250)
-                .blur(radius: 45)
 
             BundledImage.image(named: previewAssetName ?? product.assembledAssetName)
                 .resizable()
                 .scaledToFit()
                 .padding(8)
                 .scaleEffect(isReady ? 1 : 0.96)
-                .saturation(isReady ? 1 : 0.76)
-                .blur(radius: isReady ? 0 : 0.35)
-                .shadow(color: .black.opacity(0.72), radius: 22, y: 15)
+                .saturation(isReady ? 1 : 0.92)
+                .opacity(isReady ? 1 : 0.82)
+                .shadow(color: .black.opacity(0.14), radius: 14, y: 7)
 
             if !isReady {
-                processingMesh
+                VStack(spacing: 10) {
+                    ProgressView()
+                        .controlSize(.large)
+                        .tint(Color.sushiRed)
+                    Text("Updating photo")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(Color.sushiGrey)
+                }
+                .padding(.horizontal, 18)
+                .padding(.vertical, 13)
+                .background(.white.opacity(0.94), in: Capsule())
+                .overlay(Capsule().stroke(Color.sushiDivider, lineWidth: 1))
             }
 
             if isReady {
                 VStack {
                     Spacer()
                     HStack(spacing: 7) {
-                        Image(systemName: "sparkles")
-                        Text("VISUAL PREVIEW")
-                            .tracking(1)
+                        Image(systemName: "checkmark.circle.fill")
+                        Text("CUSTOMISED")
                     }
                     .font(.system(size: 9, weight: .black))
-                    .foregroundStyle(.white)
+                    .foregroundStyle(Color.sushiCoal)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 7)
-                    .background(.black.opacity(0.72), in: Capsule())
+                    .background(.white.opacity(0.94), in: Capsule())
+                    .overlay(Capsule().stroke(Color.sushiDivider, lineWidth: 1))
                     .padding(.bottom, 14)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.9)))
@@ -114,42 +111,10 @@ struct ReassemblyOverlay: View {
         }
         .frame(maxWidth: 440)
         .frame(height: 330)
-        .clipShape(RoundedRectangle(cornerRadius: 30, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .shadow(color: .black.opacity(0.06), radius: 10, y: 4)
         .animation(.easeInOut(duration: 0.35), value: isReady)
         .accessibilityLabel(isReady ? "Finished visual preview of \(product.name)" : "Rebuilding visual preview")
-    }
-
-    private var processingMesh: some View {
-        GeometryReader { proxy in
-            ZStack {
-                Canvas { context, size in
-                    let spacing: CGFloat = 21
-                    var path = Path()
-                    stride(from: 0, through: size.width, by: spacing).forEach { x in
-                        path.move(to: CGPoint(x: x, y: 0))
-                        path.addLine(to: CGPoint(x: x, y: size.height))
-                    }
-                    stride(from: 0, through: size.height, by: spacing).forEach { y in
-                        path.move(to: CGPoint(x: 0, y: y))
-                        path.addLine(to: CGPoint(x: size.width, y: y))
-                    }
-                    context.stroke(path, with: .color(Color.dishRed.opacity(0.14)), lineWidth: 0.55)
-                }
-
-                Rectangle()
-                    .fill(
-                        LinearGradient(
-                            colors: [.clear, Color.dishRed.opacity(0.85), .white.opacity(0.95), .clear],
-                            startPoint: .leading,
-                            endPoint: .trailing
-                        )
-                    )
-                    .frame(height: 2)
-                    .shadow(color: Color.dishRed, radius: 10)
-                    .offset(y: scanTravel ? proxy.size.height / 2 - 10 : -proxy.size.height / 2 + 10)
-            }
-        }
-        .allowsHitTesting(false)
     }
 
     private var progressPanel: some View {
@@ -166,22 +131,17 @@ struct ReassemblyOverlay: View {
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.08))
+                    Capsule().fill(Color.sushiDivider)
                     Capsule()
-                        .fill(
-                            LinearGradient(
-                                colors: [Color.dishRedDeep, Color.dishRed, Color.dishWarm],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
+                        .fill(Color.sushiRed)
                         .frame(width: safeFrameDimension(proxy.size.width * progress))
                 }
             }
             .frame(height: 5)
         }
         .padding(15)
-        .background(Color.dishSurfaceRaised.opacity(0.84), in: RoundedRectangle(cornerRadius: 17, style: .continuous))
+        .background(Color.white, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 16).stroke(Color.sushiDivider, lineWidth: 1))
     }
 
     @ViewBuilder
@@ -195,10 +155,10 @@ struct ReassemblyOverlay: View {
                             systemImage: item.kind == .removal ? "minus.circle.fill" : "plus.circle.fill"
                         )
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(.white)
+                        .foregroundStyle(item.kind == .removal ? Color.sushiRed : Color.dishSuccess)
                         .padding(.horizontal, 11)
                         .padding(.vertical, 8)
-                        .background(Color.white.opacity(0.06), in: Capsule())
+                        .background((item.kind == .removal ? Color.sushiRed : Color.dishSuccess).opacity(0.08), in: Capsule())
                     }
                 }
             }
@@ -209,7 +169,7 @@ struct ReassemblyOverlay: View {
         VStack(spacing: 9) {
             HStack {
                 VStack(alignment: .leading, spacing: 2) {
-                    Text("DISH TOTAL")
+                    Text("Total")
                         .font(.system(size: 9, weight: .black))
                         .tracking(1)
                         .foregroundStyle(Color.dishMuted)
@@ -223,7 +183,7 @@ struct ReassemblyOverlay: View {
                         if !isReady {
                             ProgressView().tint(.white)
                         }
-                        Text(isReady ? "Confirm Order" : "Building preview")
+                        Text(isReady ? "Continue" : "Preparing preview")
                         Image(systemName: isReady ? "arrow.right" : "hourglass")
                     }
                 }
@@ -245,12 +205,6 @@ struct ReassemblyOverlay: View {
         let fast = ProcessInfo.processInfo.arguments.contains("-DishEditFastReconstruction")
         let duration = fast ? 0.5 : 5.2
         let ticks = fast ? 10 : 52
-
-        if !reduceMotion {
-            withAnimation(.linear(duration: duration).repeatForever(autoreverses: false)) {
-                scanTravel = true
-            }
-        }
 
         for tick in 1...ticks {
             try? await Task.sleep(for: .milliseconds(Int(duration * 1_000 / Double(ticks))))

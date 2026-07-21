@@ -9,39 +9,35 @@ nonisolated func safeFrameDimension(_ value: CGFloat) -> CGFloat {
 }
 
 extension Color {
-    static let dishCanvas = Color(red: 0.025, green: 0.023, blue: 0.026)
-    static let dishSurface = Color(red: 0.075, green: 0.068, blue: 0.074)
-    static let dishSurfaceRaised = Color(red: 0.115, green: 0.102, blue: 0.111)
-    static let dishRed = Color(red: 0.91, green: 0.08, blue: 0.16)
-    static let dishRedDeep = Color(red: 0.48, green: 0.015, blue: 0.055)
-    static let dishWarm = Color(red: 1.0, green: 0.62, blue: 0.28)
-    static let dishSuccess = Color(red: 0.28, green: 0.82, blue: 0.53)
-    static let dishMuted = Color.white.opacity(0.58)
+    // Zomato Sushi foundations used by the Burger customization concept.
+    static let sushiRed = Color(red: 226 / 255, green: 55 / 255, blue: 68 / 255)
+    static let sushiCoal = Color(red: 28 / 255, green: 28 / 255, blue: 28 / 255)
+    static let sushiGrey = Color(red: 79 / 255, green: 79 / 255, blue: 79 / 255)
+    static let sushiCanvas = Color(red: 250 / 255, green: 250 / 255, blue: 250 / 255)
+    static let sushiDivider = Color(red: 232 / 255, green: 232 / 255, blue: 232 / 255)
+    // Compatibility aliases now resolve to the same light Sushi commerce
+    // system so every legacy screen participates in the redesign.
+    static let dishCanvas = sushiCanvas
+    static let dishSurface = Color.white
+    static let dishSurfaceRaised = Color.white
+    static let dishRed = sushiRed
+    static let dishRedDeep = Color(red: 184 / 255, green: 35 / 255, blue: 52 / 255)
+    static let dishWarm = sushiRed
+    static let dishSuccess = Color(red: 38 / 255, green: 126 / 255, blue: 91 / 255)
+    static let dishMuted = sushiGrey
 
     // Retained for compatibility with settings and diagnostics.
     static let zomatoGreen = Color(red: 0.11, green: 0.55, blue: 0.28)
 }
 
+enum IngredientEditorStyle: Sendable {
+    case cinematic
+    case sushiCommerce
+}
+
 struct DishEditBackdrop: View {
     var body: some View {
-        ZStack {
-            Color.dishCanvas
-
-            RadialGradient(
-                colors: [Color.dishRed.opacity(0.17), .clear],
-                center: UnitPoint(x: 0.86, y: 0.06),
-                startRadius: 0,
-                endRadius: 360
-            )
-
-            RadialGradient(
-                colors: [Color.dishWarm.opacity(0.055), .clear],
-                center: UnitPoint(x: 0.08, y: 0.72),
-                startRadius: 0,
-                endRadius: 300
-            )
-        }
-        .ignoresSafeArea()
+        Color.sushiCanvas.ignoresSafeArea()
     }
 }
 
@@ -51,19 +47,13 @@ struct DishCardModifier: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background(
-                LinearGradient(
-                    colors: [Color.white.opacity(0.075), Color.white.opacity(0.025)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: radius, style: .continuous)
-            )
+            .background(Color.white, in: RoundedRectangle(cornerRadius: radius, style: .continuous))
             .overlay {
                 RoundedRectangle(cornerRadius: radius, style: .continuous)
-                    .stroke(Color.white.opacity(borderOpacity), lineWidth: 0.8)
+                    .stroke(Color.sushiDivider, lineWidth: 1)
                     .allowsHitTesting(false)
             }
+            .shadow(color: .black.opacity(0.045), radius: 8, y: 3)
     }
 }
 
@@ -80,20 +70,8 @@ struct DishPrimaryButtonStyle: ButtonStyle {
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 56)
-            .background(
-                LinearGradient(
-                    colors: [Color.dishRed, Color(red: 0.72, green: 0.025, blue: 0.09)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 18, style: .continuous)
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: 18, style: .continuous)
-                    .stroke(Color.white.opacity(0.16), lineWidth: 0.8)
-                    .allowsHitTesting(false)
-            }
-            .shadow(color: Color.dishRed.opacity(configuration.isPressed ? 0.12 : 0.32), radius: 18, y: 8)
+            .background(Color.sushiRed, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .shadow(color: Color.sushiRed.opacity(configuration.isPressed ? 0.08 : 0.18), radius: 8, y: 3)
             .scaleEffect(configuration.isPressed ? 0.975 : 1)
             .opacity(configuration.isPressed ? 0.86 : 1)
             .animation(.spring(response: 0.24, dampingFraction: 0.82), value: configuration.isPressed)
@@ -103,10 +81,10 @@ struct DishPrimaryButtonStyle: ButtonStyle {
 struct DishGlassIconButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .foregroundStyle(.white)
+            .foregroundStyle(Color.sushiCoal)
             .frame(width: 44, height: 44)
-            .background(Color.white.opacity(configuration.isPressed ? 0.12 : 0.065), in: Circle())
-            .overlay(Circle().stroke(Color.white.opacity(0.12), lineWidth: 0.8).allowsHitTesting(false))
+            .background(configuration.isPressed ? Color.sushiDivider : Color.white, in: Circle())
+            .overlay(Circle().stroke(Color.sushiDivider, lineWidth: 1).allowsHitTesting(false))
             .scaleEffect(configuration.isPressed ? 0.94 : 1)
     }
 }
@@ -119,10 +97,10 @@ struct DishStatusPill: View {
     var body: some View {
         Label(text, systemImage: icon)
             .font(.caption2.weight(.bold))
-            .foregroundStyle(.white.opacity(0.88))
+            .foregroundStyle(tint)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
-            .background(tint.opacity(0.16), in: Capsule())
-            .overlay(Capsule().stroke(tint.opacity(0.36), lineWidth: 0.8))
+            .background(tint.opacity(0.09), in: Capsule())
+            .overlay(Capsule().stroke(tint.opacity(0.22), lineWidth: 0.8))
     }
 }

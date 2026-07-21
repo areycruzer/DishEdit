@@ -6,6 +6,7 @@ struct ExplodedDishCanvas: View {
     let presentIngredientIDs: Set<String>
     let onIngredientTap: (String) -> Void
     let onIngredientDrop: (String) -> Void
+    var style: IngredientEditorStyle = .cinematic
 
     @State private var isDropTargeted = false
 
@@ -27,6 +28,7 @@ struct ExplodedDishCanvas: View {
                         canvasSize: geometry.size,
                         isPresent: presentIngredientIDs.contains(ingredient.id),
                         canToggle: ingredient.canRemove || ingredient.canAdd,
+                        style: style,
                         onTap: { onIngredientTap(ingredient.id) }
                     )
                     .zIndex(transform.zIndex)
@@ -34,12 +36,14 @@ struct ExplodedDishCanvas: View {
 
                 VStack {
                     HStack {
-                        Label(canvasTitle, systemImage: presentationIcon)
-                            .font(.caption2.weight(.bold))
-                            .foregroundStyle(.white.opacity(0.7))
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 7)
-                            .background(.black.opacity(0.42), in: Capsule())
+                        if style == .cinematic {
+                            Label(canvasTitle, systemImage: presentationIcon)
+                                .font(.caption2.weight(.bold))
+                                .foregroundStyle(.white.opacity(0.7))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 7)
+                                .background(.black.opacity(0.42), in: Capsule())
+                        }
                         Spacer()
                     }
                     Spacer()
@@ -62,17 +66,40 @@ struct ExplodedDishCanvas: View {
                 }
             }
         }
-        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+        .clipShape(RoundedRectangle(cornerRadius: style == .sushiCommerce ? 20 : 28, style: .continuous))
         .overlay {
-            RoundedRectangle(cornerRadius: 28, style: .continuous)
-                .stroke(isDropTargeted ? Color.dishRed.opacity(0.85) : Color.white.opacity(0.11), lineWidth: isDropTargeted ? 1.6 : 0.8)
+            RoundedRectangle(cornerRadius: style == .sushiCommerce ? 20 : 28, style: .continuous)
+                .stroke(
+                    isDropTargeted
+                        ? Color.sushiRed.opacity(0.85)
+                        : (style == .sushiCommerce ? Color.sushiDivider : Color.white.opacity(0.11)),
+                    lineWidth: isDropTargeted ? 1.6 : 0.8
+                )
                 .allowsHitTesting(false)
         }
-        .shadow(color: .black.opacity(0.42), radius: 22, y: 12)
+        .shadow(color: .black.opacity(style == .sushiCommerce ? 0.08 : 0.42), radius: style == .sushiCommerce ? 8 : 22, y: style == .sushiCommerce ? 3 : 12)
         .animation(.spring(response: 0.48, dampingFraction: 0.82), value: presentIngredientIDs)
     }
 
     private var canvasBackdrop: some View {
+        Group {
+            if style == .sushiCommerce {
+                ZStack {
+                    Color.white
+                    RadialGradient(
+                        colors: [Color(red: 1, green: 0.97, blue: 0.92), .white],
+                        center: .center,
+                        startRadius: 15,
+                        endRadius: 270
+                    )
+                }
+            } else {
+                cinematicBackdrop
+            }
+        }
+    }
+
+    private var cinematicBackdrop: some View {
         ZStack {
             LinearGradient(
                 colors: [Color.white.opacity(0.055), Color.white.opacity(0.015)],
@@ -106,11 +133,11 @@ struct ExplodedDishCanvas: View {
     private var dropTarget: some View {
         ZStack {
             Circle()
-                .fill(Color.dishRed.opacity(0.1))
+                .fill((style == .sushiCommerce ? Color.sushiRed : Color.dishRed).opacity(0.1))
                 .frame(width: 170, height: 170)
                 .blur(radius: 8)
             Circle()
-                .stroke(Color.dishRed, style: StrokeStyle(lineWidth: 2, dash: [7, 7]))
+                .stroke(style == .sushiCommerce ? Color.sushiRed : Color.dishRed, style: StrokeStyle(lineWidth: 2, dash: [7, 7]))
                 .frame(width: 130, height: 130)
             VStack(spacing: 7) {
                 Image(systemName: "plus.circle.fill")
@@ -118,7 +145,7 @@ struct ExplodedDishCanvas: View {
                 Text("Drop to add")
                     .font(.caption.bold())
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(style == .sushiCommerce ? Color.sushiCoal : .white)
         }
         .allowsHitTesting(false)
     }

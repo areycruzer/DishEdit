@@ -35,7 +35,7 @@ struct RestaurantMenuView: View {
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .animation(.spring(response: 0.42, dampingFraction: 0.86), value: coordinator.cart.itemCount)
     }
 
@@ -43,17 +43,18 @@ struct RestaurantMenuView: View {
         HStack(spacing: 12) {
             ZStack {
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(Color.dishRed)
-                Image(systemName: "hand.tap.fill")
-                    .font(.system(size: 18, weight: .bold))
+                    .fill(Color.sushiRed)
+                Text("Z")
+                    .font(.system(size: 20, weight: .black))
                     .foregroundStyle(.white)
             }
             .frame(width: 42, height: 42)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("DishEdit")
-                    .font(.system(size: 21, weight: .bold, design: .rounded))
-                Text("A visual ordering experience")
+                Text(coordinator.restaurant.name)
+                    .font(.system(size: 19, weight: .bold))
+                    .foregroundStyle(Color.sushiCoal)
+                Text("Delivery in \(coordinator.restaurant.deliveryEstimate)")
                     .font(.caption)
                     .foregroundStyle(Color.dishMuted)
             }
@@ -91,10 +92,9 @@ struct RestaurantMenuView: View {
             )
 
             VStack(alignment: .leading, spacing: 11) {
-                DishStatusPill(icon: "sparkles", text: "VISUAL MENU · iOS 27")
-
                 Text(coordinator.restaurant.name)
-                    .font(.system(size: 31, weight: .bold, design: .rounded))
+                    .font(.system(size: 29, weight: .bold))
+                    .foregroundStyle(.white)
 
                 Text(coordinator.restaurant.cuisine)
                     .font(.subheadline)
@@ -120,24 +120,16 @@ struct RestaurantMenuView: View {
     }
 
     private var visualMenuIntroduction: some View {
-        HStack(alignment: .top, spacing: 14) {
-            Image(systemName: "hand.draw.fill")
-                .font(.title2)
-                .foregroundStyle(Color.dishRed)
-                .frame(width: 42, height: 42)
-                .background(Color.dishRed.opacity(0.14), in: RoundedRectangle(cornerRadius: 13))
-
-            VStack(alignment: .leading, spacing: 4) {
-                Text("Don’t describe it. Touch it.")
-                    .font(.headline)
-                Text("Open any dish, pull its ingredients apart, remove what you dislike, and drag in what you want.")
-                    .font(.caption)
-                    .foregroundStyle(Color.dishMuted)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
+        VStack(alignment: .leading, spacing: 3) {
+            Text("Recommended for you")
+                .font(.system(size: 21, weight: .bold))
+                .foregroundStyle(Color.sushiCoal)
+            Text("Popular dishes from this restaurant")
+                .font(.subheadline)
+                .foregroundStyle(Color.sushiGrey)
         }
-        .padding(16)
-        .dishCard(radius: 20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.top, 4)
     }
 
     private var cartBar: some View {
@@ -168,15 +160,8 @@ struct RestaurantMenuView: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 16)
             .frame(height: 68)
-            .background(
-                LinearGradient(
-                    colors: [Color.dishRed, Color(red: 0.66, green: 0.015, blue: 0.07)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                ),
-                in: RoundedRectangle(cornerRadius: 22, style: .continuous)
-            )
-            .shadow(color: Color.dishRed.opacity(0.42), radius: 22, y: 10)
+            .background(Color.sushiRed, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+            .shadow(color: Color.sushiRed.opacity(0.2), radius: 10, y: 4)
         }
         .buttonStyle(.plain)
         .padding(.horizontal, 16)
@@ -188,7 +173,7 @@ struct RestaurantMenuView: View {
         HStack(spacing: 10) {
             Image(systemName: "lock.shield.fill")
                 .foregroundStyle(Color.dishSuccess)
-            Text("Order details always come from the restaurant’s modifier catalog. Visual AI never decides what the kitchen prepares.")
+            Text("Your customisations are sent to the restaurant as clear item instructions.")
                 .font(.caption2)
                 .foregroundStyle(Color.dishMuted)
         }
@@ -209,19 +194,14 @@ private struct ProductExperienceCard: View {
             productDetails
         }
         .background {
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.white.opacity(0.075), Color.white.opacity(0.025)],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(Color.white)
                 .overlay {
-                    RoundedRectangle(cornerRadius: 26, style: .continuous)
-                        .stroke(Color.white.opacity(0.14), lineWidth: 0.8)
+                    RoundedRectangle(cornerRadius: 20, style: .continuous)
+                        .stroke(Color.sushiDivider, lineWidth: 1)
                         .allowsHitTesting(false)
                 }
+                .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
                 .allowsHitTesting(false)
         }
         .overlay(alignment: .bottomTrailing) {
@@ -258,6 +238,7 @@ private struct ProductExperienceCard: View {
                     .font(.system(size: 9))
             }
             .font(.caption2.bold())
+            .foregroundStyle(.white)
             .padding(.horizontal, 10)
             .padding(.vertical, 7)
             .background(.black.opacity(0.58), in: Capsule())
@@ -265,7 +246,7 @@ private struct ProductExperienceCard: View {
             .padding(13)
         }
         .frame(height: 176)
-        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 26, topTrailingRadius: 26))
+        .clipShape(UnevenRoundedRectangle(topLeadingRadius: 20, topTrailingRadius: 20))
     }
 
     private var productDetails: some View {
@@ -274,6 +255,7 @@ private struct ProductExperienceCard: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(product.name)
                         .font(.title3.bold())
+                        .foregroundStyle(Color.sushiCoal)
                         .accessibilityIdentifier("menu.product.\(product.id)")
                     Text(product.subtitle)
                         .font(.caption)
@@ -285,23 +267,23 @@ private struct ProductExperienceCard: View {
 
                 Text(INR.format(product.basePricePaise))
                     .font(.headline.monospacedDigit())
-                    .foregroundStyle(Color.dishWarm)
+                    .foregroundStyle(Color.sushiCoal)
             }
 
             Text(product.description)
                 .font(.caption)
-                .foregroundStyle(.white.opacity(0.68))
+                .foregroundStyle(Color.sushiGrey)
                 .lineLimit(3)
 
             HStack(spacing: 10) {
                 Button(action: onAdd) {
-                    Label("Quick add", systemImage: "plus")
+                    Label("Add", systemImage: "plus")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(.white.opacity(0.88))
+                        .foregroundStyle(Color.sushiRed)
                         .frame(maxWidth: .infinity)
                         .frame(height: 48)
-                        .background(.white.opacity(0.065), in: RoundedRectangle(cornerRadius: 15))
-                        .overlay(RoundedRectangle(cornerRadius: 15).stroke(.white.opacity(0.12), lineWidth: 0.8))
+                        .background(Color.white, in: RoundedRectangle(cornerRadius: 12))
+                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(Color.sushiRed, lineWidth: 1.2))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("menu.add.\(product.id)")
@@ -318,15 +300,14 @@ private struct ProductExperienceCard: View {
     private var editVisuallyButton: some View {
         Button(action: onEditVisually) {
             HStack(spacing: 7) {
-                Image(systemName: "wand.and.stars")
-                Text("Edit visually")
+                Image(systemName: "slider.horizontal.3")
+                Text("Customise visually")
             }
             .font(.subheadline.bold())
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
             .frame(height: 48)
-            .background(Color.dishRed, in: RoundedRectangle(cornerRadius: 15))
-            .shadow(color: Color.dishRed.opacity(0.32), radius: 13, y: 6)
+            .background(Color.sushiRed, in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("menu.edit-visually.\(product.id)")

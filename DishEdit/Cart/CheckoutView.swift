@@ -26,7 +26,7 @@ struct CheckoutView: View {
 
             placeOrderButton
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
     }
 
     private var checkoutHeader: some View {
@@ -38,11 +38,11 @@ struct CheckoutView: View {
             .accessibilityLabel("Back")
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("STEP 3 OF 3")
+                Text("YOUR ORDER")
                     .font(.system(size: 9, weight: .black))
                     .tracking(1.2)
                     .foregroundStyle(Color.dishRed)
-                Text("Secure checkout")
+                Text("Your cart")
                     .font(.headline)
             }
 
@@ -90,7 +90,7 @@ struct CheckoutView: View {
                     .tracking(1.4)
                     .foregroundStyle(Color.dishRed)
                 Spacer()
-                Label("Visual edits attached", systemImage: "checkmark.seal.fill")
+                Label("Customisations included", systemImage: "checkmark.circle.fill")
                     .font(.caption2.bold())
                     .foregroundStyle(Color.dishSuccess)
             }
@@ -119,9 +119,10 @@ struct CheckoutView: View {
                     .font(.caption.bold())
                     .foregroundStyle(Color.dishMuted)
             }
-            .foregroundStyle(.white)
+            .foregroundStyle(Color.sushiCoal)
             .padding(15)
-            .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            .background(Color.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.sushiDivider, lineWidth: 1))
         }
         .buttonStyle(.plain)
     }
@@ -139,7 +140,7 @@ struct CheckoutView: View {
             BillRow(label: "Platform fee", amount: totals.platformFee)
             BillRow(label: "Taxes", amount: totals.taxes)
 
-            Rectangle().fill(Color.white.opacity(0.08)).frame(height: 0.7)
+            Rectangle().fill(Color.sushiDivider).frame(height: 1)
 
             HStack {
                 Text("To Pay")
@@ -147,7 +148,7 @@ struct CheckoutView: View {
                 Spacer()
                 Text(INR.format(totals.grandTotal))
                     .font(.title3.monospacedDigit().bold())
-                    .foregroundStyle(Color.dishWarm)
+                    .foregroundStyle(Color.sushiCoal)
             }
         }
         .padding(17)
@@ -214,7 +215,8 @@ struct CheckoutView: View {
         .padding(.horizontal, 16)
         .padding(.top, 11)
         .padding(.bottom, 8)
-        .background(.ultraThinMaterial)
+        .background(Color.white)
+        .overlay(alignment: .top) { Rectangle().fill(Color.sushiDivider).frame(height: 1) }
     }
 }
 
@@ -276,7 +278,8 @@ private struct CartItemRow: View {
             }
         }
         .padding(11)
-        .background(Color.white.opacity(0.04), in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .background(Color.sushiCanvas, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .overlay(RoundedRectangle(cornerRadius: 14).stroke(Color.sushiDivider, lineWidth: 1))
     }
 }
 

@@ -152,7 +152,7 @@ final class EndToEndOrderUITests: XCTestCase {
         XCTAssertTrue(placeOrder.isEnabled)
         placeOrder.tap()
 
-        XCTAssertTrue(app.staticTexts["Your dish is in motion"].waitForExistence(timeout: 6))
+        XCTAssertTrue(app.staticTexts["Your order has been placed"].waitForExistence(timeout: 6))
         XCTAssertTrue(app.staticTexts.matching(NSPredicate(format: "label BEGINSWITH 'DEMO-'")).firstMatch.exists)
         capture("07-confirmation-\(journey.productID)")
 

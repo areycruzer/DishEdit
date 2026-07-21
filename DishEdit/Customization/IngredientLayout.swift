@@ -122,7 +122,7 @@ private nonisolated extension IngredientLayout {
             let labelSide: Double = layerIndex.isMultiple(of: 2) ? -0.32 : 0.32
             transforms[ingredient.id] = IngredientTransform(
                 center: NormalizedPoint(x: 0.5, y: y),
-                scale: 0.82,
+                scale: 0.92,
                 rotationDegrees: 0,
                 zIndex: Double(recipeOrder.count - layerIndex),
                 labelOffset: NormalizedPoint(x: labelSide, y: 0),

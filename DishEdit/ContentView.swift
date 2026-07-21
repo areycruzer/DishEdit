@@ -49,7 +49,7 @@ struct ContentView: View {
                     .padding(.bottom, 8)
             }
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .onAppear { if !reduceMotion { motion.start() } }
         .onDisappear { motion.stop() }
         .onChange(of: reduceMotion) { _, newValue in
@@ -747,13 +747,13 @@ private struct ReconstructionOverlay: View {
                     .trim(from: 0, to: progress)
                     .stroke(.red, style: StrokeStyle(lineWidth: 2.4, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                Image(systemName: "sparkles")
+                Image(systemName: "photo.badge.checkmark")
                     .font(.caption2.weight(.bold))
             }
             .frame(width: 30, height: 30)
 
             VStack(alignment: .leading, spacing: 1) {
-                Text("ON-DEVICE PREVIEW")
+                Text("DISH PREVIEW")
                     .font(.system(size: 9, weight: .black, design: .rounded))
                     .tracking(1.2)
                     .foregroundStyle(.red)

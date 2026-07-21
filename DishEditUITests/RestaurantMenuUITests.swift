@@ -23,6 +23,12 @@ final class RestaurantMenuUITests: XCTestCase {
         XCTAssertTrue(app.scrollViews.staticTexts["menu.product.taco-wrap"].exists)
     }
 
+    func testMenuUsesCustomerFacingZomatoCommerceLanguage() {
+        XCTAssertTrue(app.staticTexts["Recommended for you"].waitForExistence(timeout: 8))
+        XCTAssertFalse(app.staticTexts["VISUAL MENU · iOS 27"].exists)
+        XCTAssertFalse(app.staticTexts["Don’t describe it. Touch it."].exists)
+    }
+
     func testAddBurgerIncreasesCartCount() {
         let addButton = app.scrollViews.buttons["menu.add.burger"]
         XCTAssertTrue(addButton.waitForExistence(timeout: 8))

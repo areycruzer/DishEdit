@@ -25,6 +25,8 @@ struct AppRootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.28), value: coordinator.route)
+        .preferredColorScheme(.light)
+        .tint(Color.sushiRed)
     }
 }
 

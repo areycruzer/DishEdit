@@ -23,7 +23,7 @@ struct OrderConfirmationView: View {
             }
             .padding(20)
         }
-        .preferredColorScheme(.dark)
+        .preferredColorScheme(.light)
         .onAppear {
             guard !reduceMotion else {
                 animateCheck = true
@@ -45,15 +45,15 @@ struct OrderConfirmationView: View {
     private var successMark: some View {
         ZStack {
             Circle()
-                .fill(Color.dishSuccess.opacity(0.13))
-                .frame(width: 132, height: 132)
-                .scaleEffect(animateCheck ? 1.16 : 0.72)
+                .fill(Color.dishSuccess.opacity(0.1))
+                .frame(width: 116, height: 116)
+                .scaleEffect(animateCheck ? 1.08 : 0.72)
             Circle()
                 .fill(Color.dishSuccess)
                 .frame(width: 82, height: 82)
             Image(systemName: "checkmark")
                 .font(.system(size: 34, weight: .black))
-                .foregroundStyle(.black)
+                .foregroundStyle(.white)
         }
         .scaleEffect(animateCheck ? 1 : 0.3)
         .opacity(animateCheck ? 1 : 0)
@@ -61,9 +61,10 @@ struct OrderConfirmationView: View {
 
     private var orderInfo: some View {
         VStack(spacing: 7) {
-            DishStatusPill(icon: "fork.knife", text: "KITCHEN BRIEF SENT", tint: .dishSuccess)
-            Text("Your dish is in motion")
-                .font(.system(size: 29, weight: .bold, design: .rounded))
+            DishStatusPill(icon: "checkmark", text: "Order confirmed", tint: .dishSuccess)
+            Text("Your order has been placed")
+                .font(.system(size: 27, weight: .bold))
+                .foregroundStyle(Color.sushiCoal)
                 .multilineTextAlignment(.center)
             Text(orderID)
                 .font(.caption.monospaced().bold())
@@ -75,11 +76,11 @@ struct OrderConfirmationView: View {
         VStack(alignment: .leading, spacing: 17) {
             HStack {
                 VStack(alignment: .leading, spacing: 3) {
-                    Text("DEMO ORDER STATUS")
+                    Text("ORDER STATUS")
                         .font(.system(size: 9, weight: .black))
                         .tracking(1.3)
                         .foregroundStyle(Color.dishRed)
-                    Text("Restaurant accepted your visual brief")
+                    Text("The restaurant has accepted your order")
                         .font(.headline)
                 }
                 Spacer()
@@ -90,9 +91,9 @@ struct OrderConfirmationView: View {
 
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(Color.white.opacity(0.08))
+                    Capsule().fill(Color.sushiDivider)
                     Capsule()
-                        .fill(LinearGradient(colors: [.dishRed, .dishWarm], startPoint: .leading, endPoint: .trailing))
+                        .fill(Color.sushiRed)
                         .frame(width: safeFrameDimension(proxy.size.width * (animateRoute ? 0.67 : 0.52)))
                 }
             }
