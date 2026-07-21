@@ -61,6 +61,9 @@ final class VisualEditorUITests: XCTestCase {
     }
 
     func testShowcaseExpandedEditorsKeepEveryAddOnControlInsideTheWindow() {
+        // The card's plus badge and shadow extend past its accessibility frame.
+        // A 24-point frame gutter leaves at least 12 points of real visual air.
+        let minimumVisibleGutter: CGFloat = 24
         let showcaseAddOns = [
             "sub": ["sub.jalapenos", "sub.olives", "sub.mint-mayo"],
             "taco-wrap": ["taco-wrap.cheese", "taco-wrap.jalapenos", "taco-wrap.guacamole"]
@@ -85,13 +88,13 @@ final class VisualEditorUITests: XCTestCase {
                 let controlFrame = control.frame
                 XCTAssertGreaterThanOrEqual(
                     controlFrame.minX,
-                    windowFrame.minX,
-                    "tray.\(ingredientID) minX \(controlFrame.minX) is outside window \(windowFrame)"
+                    windowFrame.minX + minimumVisibleGutter,
+                    "tray.\(ingredientID) leading gutter \(controlFrame.minX - windowFrame.minX) is below \(minimumVisibleGutter); control=\(controlFrame), window=\(windowFrame)"
                 )
                 XCTAssertLessThanOrEqual(
                     controlFrame.maxX,
-                    windowFrame.maxX,
-                    "tray.\(ingredientID) maxX \(controlFrame.maxX) is outside window \(windowFrame)"
+                    windowFrame.maxX - minimumVisibleGutter,
+                    "tray.\(ingredientID) trailing gutter \(windowFrame.maxX - controlFrame.maxX) is below \(minimumVisibleGutter); control=\(controlFrame), window=\(windowFrame)"
                 )
             }
         }

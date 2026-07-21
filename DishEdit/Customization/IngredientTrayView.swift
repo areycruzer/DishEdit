@@ -2,10 +2,10 @@ import SwiftUI
 
 struct IngredientTrayView: View {
     private enum SushiTrayLayout {
-        static let horizontalPadding: CGFloat = 18
+        static let horizontalPadding: CGFloat = 25
         static let itemSpacing: CGFloat = 8
-        static let cardWidth: CGFloat = 116
-        static let cardHorizontalPadding: CGFloat = 6
+        static let cardWidth: CGFloat = 110
+        static let cardHorizontalPadding: CGFloat = 3
         static let imageWellWidth: CGFloat = 104
     }
 
