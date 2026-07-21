@@ -150,6 +150,22 @@ final class VisualEditorUITests: XCTestCase {
 
         let commitButton = app.buttons["commitButton"]
         XCTAssertTrue(commitButton.waitForExistence(timeout: 5))
+        XCTAssertTrue(
+            commitButton.waitForExistence(timeout: 5) && commitButton.isEnabled,
+            "The instruction CTA must be enabled before measuring its content inset. button=\(commitButton.frame)"
+        )
+
+        let addItemText = app.staticTexts["ADD ITEM"]
+        XCTAssertTrue(addItemText.waitForExistence(timeout: 5))
+
+        let buttonFrame = commitButton.frame
+        let textFrame = addItemText.frame
+        let leadingInset = textFrame.minX - buttonFrame.minX
+        XCTAssertGreaterThanOrEqual(
+            leadingInset,
+            12,
+            "ADD ITEM leading inset \(leadingInset)pt must be at least 12pt. button=\(buttonFrame), text=\(textFrame)"
+        )
     }
 
     func testAddIngredientViaTray() {
