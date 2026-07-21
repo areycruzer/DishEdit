@@ -150,9 +150,14 @@ final class VisualEditorUITests: XCTestCase {
 
         let commitButton = app.buttons["commitButton"]
         XCTAssertTrue(commitButton.waitForExistence(timeout: 5))
-        XCTAssertTrue(
-            commitButton.waitForExistence(timeout: 5) && commitButton.isEnabled,
-            "The instruction CTA must be enabled before measuring its content inset. button=\(commitButton.frame)"
+        let enabledExpectation = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "isEnabled == true"),
+            object: commitButton
+        )
+        XCTAssertEqual(
+            XCTWaiter.wait(for: [enabledExpectation], timeout: 5),
+            .completed,
+            "The instruction CTA must become enabled before measuring its content inset. button=\(commitButton.frame)"
         )
 
         let addItemText = app.staticTexts["ADD ITEM"]
