@@ -63,7 +63,7 @@ final class VisualEditorUITests: XCTestCase {
     func testShowcaseExpandedEditorsKeepEveryAddOnControlInsideTheWindow() {
         // The card's plus badge and shadow extend past its accessibility frame.
         // A 24-point frame gutter leaves at least 12 points of real visual air.
-        let minimumVisibleGutter: CGFloat = 24
+        let minimumControlFrameGutter: CGFloat = 24
         let showcaseAddOns = [
             "sub": ["sub.jalapenos", "sub.olives", "sub.mint-mayo"],
             "taco-wrap": ["taco-wrap.cheese", "taco-wrap.jalapenos", "taco-wrap.guacamole"]
@@ -81,21 +81,39 @@ final class VisualEditorUITests: XCTestCase {
             XCTAssertTrue(window.waitForExistence(timeout: 8))
             let windowFrame = window.frame
 
-            for ingredientID in ingredientIDs {
+            let controls = ingredientIDs.map { ingredientID in
                 let control = app.descendants(matching: .any)["tray.\(ingredientID)"]
                 XCTAssertTrue(control.waitForExistence(timeout: 5), "Missing tray.\(ingredientID)")
+                return (ingredientID, control)
+            }
 
+            // Validate the known screenshot risk first. On the original packed
+            // layout, the last card's visual badge/shadow had no safe trailing
+            // margin, even though its accessibility frame intersected the window.
+            if let (lastIngredientID, lastControl) = controls.last {
+                let lastControlFrame = lastControl.frame
+                XCTAssertLessThanOrEqual(
+                    lastControlFrame.maxX,
+                    windowFrame.maxX - minimumControlFrameGutter,
+                    "tray.\(lastIngredientID) trailing gutter \(windowFrame.maxX - lastControlFrame.maxX) is below \(minimumControlFrameGutter); control=\(lastControlFrame), window=\(windowFrame)"
+                )
+            }
+
+            for (ingredientID, control) in controls {
                 let controlFrame = control.frame
                 XCTAssertGreaterThanOrEqual(
                     controlFrame.minX,
-                    windowFrame.minX + minimumVisibleGutter,
-                    "tray.\(ingredientID) leading gutter \(controlFrame.minX - windowFrame.minX) is below \(minimumVisibleGutter); control=\(controlFrame), window=\(windowFrame)"
+                    windowFrame.minX + minimumControlFrameGutter,
+                    "tray.\(ingredientID) leading gutter \(controlFrame.minX - windowFrame.minX) is below \(minimumControlFrameGutter); control=\(controlFrame), window=\(windowFrame)"
                 )
-                XCTAssertLessThanOrEqual(
-                    controlFrame.maxX,
-                    windowFrame.maxX - minimumVisibleGutter,
-                    "tray.\(ingredientID) trailing gutter \(windowFrame.maxX - controlFrame.maxX) is below \(minimumVisibleGutter); control=\(controlFrame), window=\(windowFrame)"
-                )
+
+                if ingredientID != ingredientIDs.last {
+                    XCTAssertLessThanOrEqual(
+                        controlFrame.maxX,
+                        windowFrame.maxX - minimumControlFrameGutter,
+                        "tray.\(ingredientID) trailing gutter \(windowFrame.maxX - controlFrame.maxX) is below \(minimumControlFrameGutter); control=\(controlFrame), window=\(windowFrame)"
+                    )
+                }
             }
         }
     }
