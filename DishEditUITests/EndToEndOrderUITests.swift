@@ -124,20 +124,17 @@ final class EndToEndOrderUITests: XCTestCase {
         }
 
         if journey.requiresAllergenAcknowledgement {
-            XCTAssertFalse(commit.isEnabled)
-            let banner = app.buttons["allergenBanner"]
-            XCTAssertTrue(banner.waitForExistence(timeout: 5))
-            makeHittable(banner)
-            banner.tap()
+            XCTAssertTrue(commit.isEnabled)
+            commit.tap()
 
             let acknowledge = app.buttons["acknowledgeButton"]
             XCTAssertTrue(acknowledge.waitForExistence(timeout: 5))
             acknowledge.tap()
+        } else {
+            commit.tap()
         }
 
-        XCTAssertTrue(waitUntilEnabled(commit, timeout: 10))
         capture("05-instructions-\(journey.productID)")
-        commit.tap()
 
         XCTAssertTrue(app.buttons["checkout.placeOrder"].waitForExistence(timeout: 8))
         XCTAssertTrue(app.staticTexts[journey.productName].exists)

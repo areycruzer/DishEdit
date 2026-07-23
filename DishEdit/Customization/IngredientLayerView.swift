@@ -102,18 +102,18 @@ struct IngredientLayerView: View {
                     .frame(width: 6, height: 6)
             }
             Text(ingredient.name)
-                .font(.system(size: style == .sushiCommerce ? 12 : 9.5, weight: style == .sushiCommerce ? .semibold : .bold))
+                .font(.system(size: style == .sushiCommerce ? 10 : 9.5, weight: style == .sushiCommerce ? .semibold : .bold))
                 .lineLimit(1)
-                .minimumScaleFactor(0.72)
+                .minimumScaleFactor(0.68)
         }
         .foregroundStyle(
             style == .sushiCommerce
                 ? (isPresent ? Color.sushiCoal : Color.sushiGrey.opacity(0.55))
                 : (isPresent ? Color.white.opacity(0.9) : Color.white.opacity(0.46))
         )
-        .padding(.horizontal, style == .sushiCommerce ? 10 : 6)
-        .padding(.vertical, style == .sushiCommerce ? 7 : 6)
-        .frame(maxWidth: style == .sushiCommerce ? 128 : 108)
+        .padding(.horizontal, style == .sushiCommerce ? 8 : 6)
+        .padding(.vertical, style == .sushiCommerce ? 5 : 6)
+        .frame(maxWidth: style == .sushiCommerce ? 104 : 108)
         .background(style == .sushiCommerce ? Color.white : Color.black.opacity(0.72), in: Capsule())
         .overlay(Capsule().stroke(labelTint.opacity(isPresent ? 0.34 : 0.14), lineWidth: 0.8))
         .shadow(color: .black.opacity(style == .sushiCommerce ? 0.08 : 0), radius: 4, y: 2)
@@ -139,8 +139,8 @@ struct IngredientLayerView: View {
         let x = canvasSize.width * CGFloat(transform.center.x + transform.labelOffset.x)
         let y = canvasSize.height * CGFloat(transform.center.y + transform.labelOffset.y)
         return CGPoint(
-            x: min(max(x, style == .sushiCommerce ? 72 : 64), canvasSize.width - (style == .sushiCommerce ? 72 : 64)),
-            y: min(max(y, style == .sushiCommerce ? 24 : 20), canvasSize.height - (style == .sushiCommerce ? 24 : 20))
+            x: min(max(x, style == .sushiCommerce ? 56 : 64), canvasSize.width - (style == .sushiCommerce ? 56 : 64)),
+            y: min(max(y, style == .sushiCommerce ? 20 : 20), canvasSize.height - (style == .sushiCommerce ? 20 : 20))
         )
     }
 

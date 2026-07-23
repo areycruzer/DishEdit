@@ -161,7 +161,7 @@ private nonisolated extension IngredientLayout {
                 let tilt = Double((fillingIndex % 3) - 1) * 3.5
                 transforms[ingredient.id] = IngredientTransform(
                     center: NormalizedPoint(x: x, y: y),
-                    scale: 0.50,
+                    scale: 0.60,
                     rotationDegrees: tilt,
                     zIndex: Double(index),
                     labelOffset: counterLabelOffset(column: column, row: row),
@@ -224,9 +224,9 @@ private nonisolated extension IngredientLayout {
         }
         let y: Double
         if row == 0 {
-            y = column.isMultiple(of: 2) ? -0.10 : 0.07
+            y = column.isMultiple(of: 2) ? -0.12 : 0.09
         } else {
-            y = column.isMultiple(of: 2) ? -0.07 : 0.10
+            y = column.isMultiple(of: 2) ? -0.10 : 0.12
         }
         return NormalizedPoint(x: x, y: y)
     }

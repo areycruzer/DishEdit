@@ -5,9 +5,9 @@ import Foundation
 enum DemoRestaurantCatalog {
     nonisolated static let copperAndCrumb = RestaurantDefinition(
         id: "copper-and-crumb",
-        name: "Copper & Crumb",
+        name: "Burger Queen",
         cuisine: "Burgers · Subs · Wraps",
-        rating: 4.3,
+        rating: 4.7,
         deliveryEstimate: "25–35 min",
         products: [burger, sub, tacoWrap]
     )
@@ -18,11 +18,11 @@ enum DemoRestaurantCatalog {
 private extension DemoRestaurantCatalog {
     nonisolated static let burger = ProductDefinition(
         id: "burger",
-        name: "The Classic Burger",
-        subtitle: "Charred beef · brioche · house sauce",
-        description: "Our signature charcoal-grilled patty on a toasted brioche bun with house sauce, fresh tomato, red onion, and crisp lettuce.",
+        name: "The Classic Paneer Burger",
+        subtitle: "Grilled paneer · brioche · house sauce",
+        description: "Our signature grilled paneer patty on a toasted brioche bun with house sauce, fresh tomato, red onion, and crisp lettuce.",
         basePricePaise: 24_900,
-        dietaryMarker: "Non-veg",
+        dietaryMarker: "Veg",
         rating: 4.5,
         assembledAssetName: "menu_burger_hero",
         presentation: .explodedLayers,
@@ -55,7 +55,7 @@ private extension DemoRestaurantCatalog {
             ),
             IngredientDefinition(
                 id: "burger.patty",
-                name: "Beef patty",
+                name: "Paneer patty",
                 role: .protein,
                 defaultPresence: true,
                 canRemove: false,
@@ -64,7 +64,7 @@ private extension DemoRestaurantCatalog {
                 layerAssetName: "burger_layer_patty",
                 authorMaskAssetName: nil,
                 placementSlots: [],
-                accessibilityDescription: "Charcoal-grilled beef patty"
+                accessibilityDescription: "Grilled paneer patty"
             ),
             IngredientDefinition(
                 id: "burger.tomato",
@@ -128,7 +128,14 @@ private extension DemoRestaurantCatalog {
                 priceDeltaPaise: 4_000,
                 layerAssetName: "burger_layer_cheddar",
                 authorMaskAssetName: "burger_cheese_mask",
-                placementSlots: [NormalizedRect(x: 0.18, y: 0.47, width: 0.64, height: 0.28)],
+                placementSlots: [
+                    NormalizedRect(
+                        x: 0.18,
+                        y: 0.47,
+                        width: 0.64,
+                        height: 0.28
+                    )
+                ],
                 accessibilityDescription: "Cheddar cheese slice, adds ₹40"
             ),
             IngredientDefinition(
@@ -141,13 +148,19 @@ private extension DemoRestaurantCatalog {
                 priceDeltaPaise: 3_000,
                 layerAssetName: "burger_layer_jalapenos",
                 authorMaskAssetName: "burger_jalapenos_mask",
-                placementSlots: [NormalizedRect(x: 0.20, y: 0.35, width: 0.60, height: 0.25)],
+                placementSlots: [
+                    NormalizedRect(
+                        x: 0.20,
+                        y: 0.35,
+                        width: 0.60,
+                        height: 0.25
+                    )
+                ],
                 accessibilityDescription: "Sliced jalapeños, adds ₹30"
             )
         ]
     )
 }
-
 // MARK: - Build Your Own Sub
 
 private extension DemoRestaurantCatalog {

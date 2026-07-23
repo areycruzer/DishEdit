@@ -7,6 +7,7 @@ struct InstructionReviewView: View {
     @State private var proposal: InstructionProposal?
     @State private var validation: InstructionValidationResult?
     @State private var showAllergySheet = false
+    @State private var commitsItemAfterAcknowledgement = false
     @State private var isDrafting = true
     @FocusState private var isCustomerNoteFocused: Bool
 
@@ -42,7 +43,13 @@ struct InstructionReviewView: View {
             AllergyAcknowledgementSheet(
                 allergens: proposal?.allergenFlags ?? [],
                 isAcknowledged: coordinator.allergyAcknowledged,
-                onAcknowledge: { coordinator.setAllergyAcknowledged(true) }
+                onAcknowledge: {
+                    coordinator.setAllergyAcknowledged(true)
+                    if commitsItemAfterAcknowledgement {
+                        commitsItemAfterAcknowledgement = false
+                        coordinator.commitToCart(productID: productID)
+                    }
+                }
             )
             .presentationDetents([.medium])
         }
@@ -270,14 +277,14 @@ struct InstructionReviewView: View {
     private var commitBar: some View {
         VStack(spacing: 8) {
             Button {
-                coordinator.commitToCart(productID: productID)
+                commitItem()
             } label: {
                 HStack {
                     VStack(alignment: .leading, spacing: 1) {
                         Text("ADD ITEM")
                             .font(.system(size: 9, weight: .black))
                             .tracking(1)
-                        Text("Customisations included")
+                        Text(requiresAllergyAcknowledgement ? "Review allergen notice" : "Customisations included")
                             .font(.caption.bold())
                     }
                     Spacer()
@@ -286,7 +293,7 @@ struct InstructionReviewView: View {
                 .padding(.horizontal, 16)
             }
             .buttonStyle(DishPrimaryButtonStyle())
-            .disabled(!canCommit)
+            .disabled(isDrafting)
             .accessibilityIdentifier("commitButton")
         }
         .padding(.horizontal, 16)
@@ -296,10 +303,20 @@ struct InstructionReviewView: View {
         .overlay(alignment: .top) { Rectangle().fill(Color.sushiDivider).frame(height: 1) }
     }
 
-    private var canCommit: Bool {
-        guard !isDrafting else { return false }
+    private var requiresAllergyAcknowledgement: Bool {
         let catalogFlags = proposal?.allergenFlags ?? []
-        return (catalogFlags.isEmpty && !noteMentionsAllergy) || coordinator.allergyAcknowledged
+        return !catalogFlags.isEmpty || noteMentionsAllergy
+    }
+
+    private func commitItem() {
+        guard !isDrafting else { return }
+        guard requiresAllergyAcknowledgement, !coordinator.allergyAcknowledged else {
+            coordinator.commitToCart(productID: productID)
+            return
+        }
+
+        commitsItemAfterAcknowledgement = true
+        showAllergySheet = true
     }
 
     private var noteMentionsAllergy: Bool {

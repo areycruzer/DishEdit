@@ -204,11 +204,6 @@ private struct ProductExperienceCard: View {
                 .shadow(color: .black.opacity(0.06), radius: 8, y: 3)
                 .allowsHitTesting(false)
         }
-        .overlay(alignment: .bottomTrailing) {
-            editVisuallyButton
-                .frame(width: 164)
-                .padding(16)
-        }
         .onAppear {
             withAnimation(.easeOut(duration: 0.7)) { imageScale = 1 }
         }
@@ -288,10 +283,7 @@ private struct ProductExperienceCard: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("menu.add.\(product.id)")
 
-                Color.clear
-                    .frame(maxWidth: .infinity)
-                .frame(height: 48)
-                    .accessibilityHidden(true)
+                editVisuallyButton
             }
         }
         .padding(16)

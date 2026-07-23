@@ -68,6 +68,18 @@ struct IngredientLayoutTests {
         #expect(bread.center.y > 0.7, "Bread should be at bottom")
     }
 
+    @Test func subFillingsUseAReadableImageScale() {
+        let transforms = IngredientLayout.expanded(for: sub)
+        let fillings = sub.ingredients.filter { $0.role != .base }
+
+        for filling in fillings {
+            #expect(
+                (transforms[filling.id]?.scale ?? 0) >= 0.60,
+                "\(filling.id) should remain visually prominent beside its label"
+            )
+        }
+    }
+
     @Test func tacoTortillaStaysAtBottom() {
         let transforms = IngredientLayout.expanded(for: taco)
         let tortilla = transforms["taco-wrap.tortilla"]!
