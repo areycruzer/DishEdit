@@ -6,7 +6,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-and-test:
     runs-on: xcode-27
     steps:
       - uses: actions/checkout@v4
@@ -23,4 +23,30 @@ jobs:
           -project DishEdit.xcodeproj
           -scheme DishEdit
           -destination 'generic/platform=iOS Simulator'
+          CODE_SIGNING_ALLOWED=NO
+
+      - name: Pick an iOS 27 iPhone simulator
+        run: |
+          UDID=$(xcrun simctl list devices available -j | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          for runtime in sorted(devices, reverse=True):
+              if "iOS-27" not in runtime:
+                  continue
+              for d in devices[runtime]:
+                  if d["name"].startswith("iPhone"):
+                      print(d["udid"]); sys.exit(0)
+          sys.exit("no iOS 27 iPhone simulator found")
+          ')
+          echo "SIM_UDID=$UDID" >> "$GITHUB_ENV"
+          xcrun simctl list devices available | grep "$UDID"
+
+      - name: Run unit tests
+        run: >
+          xcodebuild test
+          -project DishEdit.xcodeproj
+          -scheme DishEdit
+          -destination "id=$SIM_UDID"
+          -only-testing:DishEditTests
+          -parallel-testing-enabled NO
           CODE_SIGNING_ALLOWED=NO

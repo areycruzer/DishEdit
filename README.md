@@ -102,6 +102,10 @@ The architecture separates commerce truth from visual intelligence. A catalog ed
 - Native SwiftUI drag and drop
 - Swift Testing and XCUITest
 
+## Credits
+
+Built by Swyam Sharma with [Vansh Nagpal](https://github.com/VanshNagpal10), who built the restaurant menu and checkout screens and fixed several layout bugs.
+
 ## Project structure
 
 ```text
